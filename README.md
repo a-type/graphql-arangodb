@@ -59,6 +59,10 @@ input GetUserInput {
 
 type Query {
   user(input: GetUserInput!): User
+    @document(
+      collection: "users"
+      key: "$args.input.id"
+    )
 }
 ```
 
@@ -92,7 +96,7 @@ graphql(UserWithFriendsPosts, { userId: 'someid' })
 Would create an AQL query:
 
 ```aql
-LET user = DOCUMENT('users', 'someid')
+LET user = DOCUMENT(users, 'someid')
   RETURN {
     "id": user.id,
     "name": user.name,
