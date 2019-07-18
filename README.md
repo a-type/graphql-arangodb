@@ -15,6 +15,11 @@ enum RelationDirection {
   ANY
 }
 
+enum SortOrder {
+  ASC
+  DESC
+}
+
 scalar Date
 
 type Post {
@@ -29,9 +34,41 @@ input UserFriendsFilterInput {
   ageLt: Int
 }
 
+input UserFriendsPaginationInput {
+  offset: Int
+  count: Int = 10
+}
+
+input UserFriendsSortInput {
+  order: SortOrder
+  value: String
+}
+
+input UserFriendsInput {
+  filter: UserFriendsFilterInput
+  pagination: UserFriendsPaginationInput
+  sort: UserFriendsSortInput
+}
+
 input UserPostsFilterInput {
   publishedAtGt: Date
   publishedAtLt: Date
+}
+
+input UserPostsPaginationInput {
+  offset: Int
+  count: Int = 10
+}
+
+input UserPostsSortInput {
+  order: SortOrder
+  value: string
+}
+
+input UserPostsInput {
+  filter: UserPostsFilterInput
+  pagination: UserPostsPaginationInput
+  sort: UserPostsSortInput
 }
 
 type User {
@@ -40,13 +77,13 @@ type User {
   bio: String
   age: Int!
 
-  posts(input: UserPostsFilterInput): [Post!]!
+  posts(input: UserPostsInput): [Post!]!
     @relation(
       name: "post"
       direction: OUT
     )
 
-  friends(input: UserFriendsFilterInput): [User!]!
+  friends(input: UserFriendsInput): [User!]!
     @relation(
       name: "friend"
       direction: ANY
@@ -73,10 +110,10 @@ query UserWithFriendsPosts($userId: ID) {
   user(input: { id: $userId }) {
     id
     name
-    friends(input: { ageGt: 10 }) {
+    friends(input: { filter: { ageGt: 10 } }) {
       id
       name
-      posts(input: { publishedAtGt: "2019-07-01" }) {
+      posts(input: { filter: { publishedAtGt: "2019-07-01" } }) {
         id
         title
         body
@@ -104,6 +141,7 @@ LET user = DOCUMENT(users, 'someid')
       FOR user_friends IN ANY user
         friend
         FILTER user_friends.age > 10
+        LIMIT 10
         RETURN {
           "id": user_friends.id,
           "name": user_friends.name,
@@ -111,6 +149,7 @@ LET user = DOCUMENT(users, 'someid')
             FOR user_friends_posts IN OUTBOUND user_friends
               post
               FILTER user_friends_posts.publishedAt > DATE_ISO8601("2019-07-01")
+              LIMIT 10
               RETURN {
                 "id": user_friends_posts.id,
                 "title": user_friends_posts.title,
