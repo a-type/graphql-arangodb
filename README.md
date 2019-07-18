@@ -6,6 +6,8 @@ An experimental library for 'translating' GraphQL operations into ArangoDB AQL q
 
 Since this library is still in early phase, I'll be sketching ideas on how it might work here.
 
+### Query Translation
+
 Given a schema:
 
 ```graphql
@@ -159,6 +161,65 @@ LET user = DOCUMENT(users, 'someid')
         }
     )
   }
+```
+
+### Library Usage
+
+After experiments in this space yielding pretty tricky edge-cases for customization, I'm thinking about moving in a more framework-esque direction where this library is your primary method of constructing the final executable schema, for maximum control. This also makes sense with ArangoDB, since it's multi-model and can therefore act as your holistic data store for a larger number of use cases.
+
+```ts
+import { makeSchema } from 'graphql-arangodb';
+import { Database, aql } from 'arangojs';
+
+const typeDefs = `
+  ... graphql schema with directives for arango queries
+`;
+
+// argumentResolvers allow you to modify incoming args before inserting them
+// into the AQL query. They must be separate because we are not guaranteed to actually
+// run the 'real' resolvers before the query is built and submitted.
+// TODO: validate this constraint / assumption more carefully to see if this can
+// be reworked to use normal resolvers.
+const argumentResolvers = {
+  Query: {
+    User: {
+      posts: ({ pagination, ...rest }) => ({
+        ...rest,
+        pagination: {
+          // providing some defaults manually.. this could be done
+          // in the schema directly, but for the sake of example
+          offset: 0,
+          limit: 10,
+          ...(pagination || {}),
+        }
+      })
+    }
+  }
+};
+
+// these are more analogous to regular GraphQL resolvers. The `parent` is an async
+// function that resolves the parent data. You need to await it to get parent data.
+const customResolvers = {
+  Query: {
+    User: {
+      // suppose we wanted to enforce names are all UPPERCASE
+      name: async (loadParent, args, ctx, info) => {
+        const user = await loadParent();
+
+        return user.name.toUpperCase();
+      }
+    }
+  }
+};
+
+const db = new Database();
+
+const schema = makeSchema({
+  typeDefs,
+  argumentResolvers,
+  resolvers: customResolvers,
+  db,
+});
 ```
 
 ---------
