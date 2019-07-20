@@ -1,1 +1,1 @@
-export * from './makeSchema';
+export * from './augmentSchema';

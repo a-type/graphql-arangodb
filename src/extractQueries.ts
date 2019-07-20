@@ -24,6 +24,7 @@ import {
   extractObjectType,
   getNameOrAlias,
 } from './utils/graphql';
+import { pathOr } from 'ramda';
 
 type CommonExtractionParams = {
   queries: QueryFieldMap;
@@ -32,11 +33,13 @@ type CommonExtractionParams = {
   parentType: GraphQLObjectType;
   path: string[];
   plugins: { [directiveName: string]: Plugin };
+  argumentResolvers: { [path: string]: any };
 };
 
 export const extractQueriesFromOperation = (
   info: GraphQLResolveInfo,
-  plugins: { [directiveName: string]: Plugin }
+  plugins: { [directiveName: string]: Plugin },
+  argumentResolvers: { [path: string]: any }
 ): QueryFieldMap =>
   info.fieldNodes.reduce(
     (queries: QueryFieldMap, field) =>
@@ -48,6 +51,7 @@ export const extractQueriesFromOperation = (
         parentQuery: undefined,
         plugins,
         path: [getNameOrAlias(field)],
+        argumentResolvers,
       }),
     {}
   );
@@ -60,6 +64,7 @@ const extractQueriesFromField = ({
   field,
   path,
   plugins,
+  argumentResolvers,
 }: CommonExtractionParams & {
   field: FieldNode;
 }) => {
@@ -113,8 +118,10 @@ const extractQueriesFromField = ({
 
       if (Object.keys(argValues).length) {
         paramNames.push('args');
-        // TODO: process via argReducer
-        params.args = argValues;
+        // process via arg resolver if it exists
+        const argResolver = pathOr((a: any) => a, path, argumentResolvers);
+        const resolvedArgs = argResolver(argValues);
+        params.args = resolvedArgs;
       }
 
       currentQuery = {
@@ -147,11 +154,12 @@ const extractQueriesFromField = ({
   return extractQueriesFromSelectionSet({
     selectionSet: field.selectionSet,
     queries,
-    parentQuery,
+    parentQuery: currentQuery,
     parentType: currentTypeAsObjectType,
     info,
     path,
     plugins,
+    argumentResolvers,
   });
 };
 

@@ -9,6 +9,8 @@ import {
   isObjectType,
   ValueNode,
   NameNode,
+  GraphQLResolveInfo,
+  ResponsePath,
 } from 'graphql';
 
 export const getArgumentsPlusDefaults = (
@@ -104,3 +106,26 @@ export const extractObjectType = (
 
   return null;
 };
+
+export const getIsRootField = (info: GraphQLResolveInfo): boolean =>
+  [info.schema.getQueryType(), info.schema.getMutationType()]
+    .filter(Boolean)
+    .some(rootType => !!rootType && rootType.name === info.parentType.name);
+
+/**
+ * Converts a path from `info` into a field path, skipping over
+ * array indices (since they are not represented in the schema
+ * field selection paths)
+ */
+export function getFieldPath(info: GraphQLResolveInfo) {
+  const path: string[] = [];
+  let pathLink: ResponsePath | undefined = info.path;
+  while (pathLink) {
+    if (typeof pathLink.key === 'string') {
+      path.unshift(pathLink.key);
+    }
+    pathLink = pathLink.prev;
+  }
+
+  return path;
+}

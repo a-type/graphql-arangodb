@@ -10,7 +10,8 @@
   "scripts": {
     "start": "tsdx watch",
     "build": "tsdx build",
-    "test": "tsdx test"
+    "test": "jest --watch",
+    "test:integration": "jest -c=./jest.integration.config.js --forceExit --runInBand"
   },
   "peerDependencies": {
     "arangojs": "^6.10.0",
@@ -30,6 +31,7 @@
   "devDependencies": {
     "@types/graphql": "^14.2.2",
     "@types/jest": "^24.0.15",
+    "@types/ramda": "^0.26.16",
     "arangojs": "^6.10.0",
     "graphql": "^14.4.2",
     "husky": "^3.0.0",
@@ -40,6 +42,7 @@
     "typescript": "^3.5.3"
   },
   "dependencies": {
+    "graphql-middleware": "^3.0.2",
     "graphql-tools": "^4.0.5",
     "ramda": "^0.26.1"
   }

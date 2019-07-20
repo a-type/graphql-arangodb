@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 
-const tag = '[graphql-cypher] ';
+const tag = '[graphql-arangodb] ';
 
 export const log = ({
   title,

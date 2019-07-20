@@ -80,16 +80,10 @@ type User {
   age: Int!
 
   posts(input: UserPostsInput): [Post!]!
-    @relation(
-      name: "post"
-      direction: OUT
-    )
+    @node(edgeCollection: "post", direction: OUT)
 
   friends(input: UserFriendsInput): [User!]!
-    @relation(
-      name: "friend"
-      direction: ANY
-    )
+    @node(edgeCollection: "friend", direction: ANY)
 }
 
 input GetUserInput {
@@ -98,10 +92,7 @@ input GetUserInput {
 
 type Query {
   user(input: GetUserInput!): User
-    @document(
-      collection: "users"
-      key: "$args.input.id"
-    )
+    @document(collection: "users", key: "$args.input.id")
 }
 ```
 
@@ -191,10 +182,10 @@ const argumentResolvers = {
           offset: 0,
           limit: 10,
           ...(pagination || {}),
-        }
-      })
-    }
-  }
+        },
+      }),
+    },
+  },
 };
 
 // these are more analogous to regular GraphQL resolvers. The `parent` is an async
@@ -207,9 +198,9 @@ const customResolvers = {
         const user = await loadParent();
 
         return user.name.toUpperCase();
-      }
-    }
-  }
+      },
+    },
+  },
 };
 
 const db = new Database();
@@ -222,7 +213,7 @@ const schema = makeSchema({
 });
 ```
 
----------
+---
 
 This project was bootstrapped with [TSDX](https://github.com/jaredpalmer/tsdx).
 
