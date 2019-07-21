@@ -60,16 +60,24 @@ describe('query translation integration tests', () => {
     );
 
     expect(mockRunQuery.mock.calls[0][0].query).toMatchInlineSnapshot(`
-                        "LET user = DOCUMENT(users, \\"foo\\")
-                        RETURN {
-                          id: id,
-                          name: name,
-                          bio: bio
-                        }"
-                `);
-    expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchInlineSnapshot(
-      `Object {}`
-    );
+            "LET user = DOCUMENT(users, \\"@field_user.args.id\\")
+            RETURN {
+              id: id,
+              name: name,
+              bio: bio
+            }"
+        `);
+    expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchInlineSnapshot(`
+      Object {
+        "context": undefined,
+        "field_user": Object {
+          "args": Object {
+            "id": "foo",
+          },
+        },
+        "parent": undefined,
+      }
+    `);
   });
 
   test('translates a document with a nested node', async () => {
@@ -112,22 +120,95 @@ describe('query translation integration tests', () => {
     );
 
     expect(mockRunQuery.mock.calls[0][0].query).toMatchInlineSnapshot(`
-      "LET user = DOCUMENT(users, \\"foo\\")
-      RETURN {
-        id: id,
-        name: name
-        simplePosts: (
-          FOR user_simplePosts IN OUT user
-            posted
-          RETURN {
-            id: id,
-            title: title
-          }
-        )
-      }"
+            "LET user = DOCUMENT(users, \\"@field_user.args.id\\")
+            RETURN {
+              id: id,
+              name: name
+              simplePosts: (
+                FOR user_simplePosts IN OUT user
+                  posted
+                RETURN {
+                  id: id,
+                  title: title
+                }
+              )
+            }"
+        `);
+    expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchInlineSnapshot(`
+      Object {
+        "context": undefined,
+        "field_user": Object {
+          "args": Object {
+            "id": "foo",
+          },
+        },
+        "field_user_simplePosts": Object {
+          "args": undefined,
+        },
+        "parent": undefined,
+      }
     `);
-    expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchInlineSnapshot(
-      `Object {}`
+  });
+
+  test('filters', async () => {
+    await run(
+      `
+      query GetUserAndFilteredPosts {
+        user(id: "foo") {
+          id
+
+          filteredPosts(titleMatch: "here") {
+            id
+            title
+          }
+        }
+      }
+      `,
+      [
+        {
+          user: {
+            id: 'foo',
+            filteredPosts: [
+              {
+                id: 'c',
+                title: 'Come here often, world?',
+              },
+            ],
+          },
+        },
+      ]
     );
+
+    expect(mockRunQuery.mock.calls[0][0].query).toMatchInlineSnapshot(`
+            "LET user = DOCUMENT(users, \\"@field_user.args.id\\")
+            RETURN {
+              id: id
+              filteredPosts: (
+                FOR user_filteredPosts IN OUT user
+                  posted
+                FILTER user_filteredPosts.title =~ @field_user_filteredPosts.args.titleMatch
+                RETURN {
+                  id: id,
+                  title: title
+                }
+              )
+            }"
+        `);
+    expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchInlineSnapshot(`
+      Object {
+        "context": undefined,
+        "field_user": Object {
+          "args": Object {
+            "id": "foo",
+          },
+        },
+        "field_user_filteredPosts": Object {
+          "args": Object {
+            "titleMatch": "here",
+          },
+        },
+        "parent": undefined,
+      }
+    `);
   });
 });

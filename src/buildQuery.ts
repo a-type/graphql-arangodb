@@ -1,5 +1,5 @@
 import { DBQuery } from './types';
-import { createFieldArgGetter } from './utils/plugins';
+import { createAllReplacer } from './utils/plugins';
 import { lines, indent } from './utils/strings';
 
 type QueryBuilderArgs = {
@@ -13,16 +13,22 @@ export const buildQuery = ({
   fieldName,
   parentName,
 }: QueryBuilderArgs): string => {
-  const statements = query.plugins.map(({ directiveArgs, plugin }) =>
-    plugin.build({
+  const statements = query.plugins.map(({ directiveArgs, plugin }) => {
+    const fieldArgs = query.params.args || {};
+    const interpolate = createAllReplacer({
       fieldName,
-      parentName,
-      fieldArgs: query.params.args || {},
-      getFieldArg: createFieldArgGetter(query.params.args || {}),
-      directiveArgs,
-      returnsList: query.returnsList,
-    })
-  );
+    });
+
+    return interpolate(
+      plugin.build({
+        fieldName,
+        parentName,
+        fieldArgs,
+        directiveArgs,
+        returnsList: query.returnsList,
+      })
+    );
+  });
 
   return lines([...statements, buildReturnProjection({ query, fieldName })]);
 };

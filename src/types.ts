@@ -26,7 +26,6 @@ export type Plugin = {
     fieldName: string;
     directiveArgs: { [name: string]: any };
     fieldArgs: { [name: string]: any };
-    getFieldArg(path: string): any;
     returnsList: boolean;
     parentName: string;
   }) => string;

@@ -14,4 +14,8 @@ directive @node(
   edgeCollection: String!
   direction: EdgeDirection!
 ) on FIELD_DEFINITION
+
+directive @filter(
+  statement: String!
+) on FIELD_DEFINITION
 `;

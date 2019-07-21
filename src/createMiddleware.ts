@@ -6,6 +6,7 @@ import { log } from './logger';
 import { buildQuery } from './buildQuery';
 import { runQuery } from './runQuery';
 import { Database } from 'arangojs';
+import { buildPrefixedVariables } from './utils/variables';
 
 export const createMiddleware = ({
   db,
@@ -61,7 +62,12 @@ export const createMiddleware = ({
           parentName: '',
         });
 
-        const bindVars = {}; // TODO
+        const bindVars = buildPrefixedVariables({
+          fieldName: info.fieldName,
+          query: matchingQuery,
+          parent,
+          contextValues: context.arangoContext,
+        });
 
         log({
           title: `Running ${isWrite ? 'write' : 'read'} query`,

@@ -13,6 +13,13 @@ export default `
         edgeCollection: "posted"
         direction: OUT
       )
+
+    filteredPosts(titleMatch: String): [Post!]!
+      @node(
+        edgeCollection: "posted"
+        direction: OUT
+      )
+      @filter(statement: "$field.title =~ $args.titleMatch")
   }
 
   type Post {
