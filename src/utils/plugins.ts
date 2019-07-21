@@ -38,6 +38,15 @@ const createFieldReplacer = (fieldName: string) => (text: string) => {
   return modifiedText;
 };
 
+const createParentReplacer = (parentName: string) => (text: string) => {
+  let modifiedText = '' + text;
+  let index;
+  while ((index = modifiedText.indexOf('$parent')) >= 0) {
+    modifiedText = spliceString(modifiedText, index, '$parent', parentName);
+  }
+  return modifiedText;
+};
+
 const spliceString = (
   text: string,
   index: number,
@@ -49,9 +58,17 @@ const spliceString = (
   );
 };
 
-export const createAllReplacer = ({ fieldName }: { fieldName: string }) => {
+export const createAllReplacer = ({
+  fieldName,
+  parentName,
+}: {
+  fieldName: string;
+  parentName: string;
+}) => {
   const argReplacer = createArgReplacer(createFieldArgGetter(fieldName));
   const fieldReplacer = createFieldReplacer(fieldName);
+  const parentReplacer = createParentReplacer(parentName);
 
-  return (text: string): string => fieldReplacer(argReplacer(text));
+  return (text: string): string =>
+    parentReplacer(fieldReplacer(argReplacer(text)));
 };

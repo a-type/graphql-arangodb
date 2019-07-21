@@ -17,6 +17,7 @@ export const buildQuery = ({
     const fieldArgs = query.params.args || {};
     const interpolate = createAllReplacer({
       fieldName,
+      parentName,
     });
 
     return interpolate(
@@ -46,7 +47,10 @@ const buildReturnProjection = ({
 
   return lines([
     `RETURN {`,
-    lines(scalarFields.map(name => `${name}: ${name}`).map(indent), ',\n'),
+    lines(
+      scalarFields.map(name => `${name}: ${fieldName}.${name}`).map(indent),
+      ',\n'
+    ),
     lines(
       nonScalarFields
         .map(name => {

@@ -3,11 +3,17 @@ import { node } from './node';
 import { filter } from './filter';
 import { sort } from './sort';
 import { limit } from './limit';
+import { edge } from './edge';
+import { edgeNode } from './edgeNode';
+import { aql } from './aql';
 
 export default {
-  [document.directiveName]: document,
-  [node.directiveName]: node,
-  [filter.directiveName]: filter,
-  [sort.directiveName]: sort,
-  [limit.directiveName]: limit,
+  document,
+  node,
+  filter,
+  sort,
+  limit,
+  edge,
+  edgeNode,
+  aql,
 };

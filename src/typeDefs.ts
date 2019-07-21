@@ -33,4 +33,15 @@ directive @limit(
   skip: String
   count: String!
 ) on FIELD_DEFINITION
+
+directive @edge(
+  direction: EdgeDirection!
+  collection: String!
+) on FIELD_DEFINITION
+
+directive @edgeNode on FIELD_DEFINITION
+
+directive @aql(
+  statement: String!
+) on FIELD_DEFINITION
 `;
