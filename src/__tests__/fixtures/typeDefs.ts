@@ -20,6 +20,21 @@ export default `
         direction: OUT
       )
       @filter(statement: "$field.title =~ $args.titleMatch")
+
+    paginatedPosts(count: Int!, sort: String = "title", skip: Int): [Post!]!
+      @node(
+        edgeCollection: "posted"
+        direction: OUT
+      )
+      @sort(fieldName: "$args.sort")
+      @limit(skip: "$args.skip", count: "$args.count")
+
+    descendingPosts: [Post!]!
+      @node(
+        edgeCollection: "posted"
+        direction: OUT
+      )
+      @sort(fieldName: "title", order: DESC)
   }
 
   type Post {

@@ -60,24 +60,24 @@ describe('query translation integration tests', () => {
     );
 
     expect(mockRunQuery.mock.calls[0][0].query).toMatchInlineSnapshot(`
-            "LET user = DOCUMENT(users, \\"@field_user.args.id\\")
-            RETURN {
-              id: id,
-              name: name,
-              bio: bio
-            }"
-        `);
+                                    "LET user = DOCUMENT(users, \\"@field_user.args.id\\")
+                                    RETURN {
+                                      id: id,
+                                      name: name,
+                                      bio: bio
+                                    }"
+                        `);
     expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchInlineSnapshot(`
-      Object {
-        "context": undefined,
-        "field_user": Object {
-          "args": Object {
-            "id": "foo",
-          },
-        },
-        "parent": undefined,
-      }
-    `);
+                              Object {
+                                "context": undefined,
+                                "field_user": Object {
+                                  "args": Object {
+                                    "id": "foo",
+                                  },
+                                },
+                                "parent": undefined,
+                              }
+                    `);
   });
 
   test('translates a document with a nested node', async () => {
@@ -120,34 +120,34 @@ describe('query translation integration tests', () => {
     );
 
     expect(mockRunQuery.mock.calls[0][0].query).toMatchInlineSnapshot(`
-            "LET user = DOCUMENT(users, \\"@field_user.args.id\\")
-            RETURN {
-              id: id,
-              name: name
-              simplePosts: (
-                FOR user_simplePosts IN OUT user
-                  posted
-                RETURN {
-                  id: id,
-                  title: title
-                }
-              )
-            }"
-        `);
+                                    "LET user = DOCUMENT(users, \\"@field_user.args.id\\")
+                                    RETURN {
+                                      id: id,
+                                      name: name
+                                      simplePosts: (
+                                        FOR user_simplePosts IN OUT user
+                                          posted
+                                        RETURN {
+                                          id: id,
+                                          title: title
+                                        }
+                                      )
+                                    }"
+                        `);
     expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchInlineSnapshot(`
-      Object {
-        "context": undefined,
-        "field_user": Object {
-          "args": Object {
-            "id": "foo",
-          },
-        },
-        "field_user_simplePosts": Object {
-          "args": undefined,
-        },
-        "parent": undefined,
-      }
-    `);
+                              Object {
+                                "context": undefined,
+                                "field_user": Object {
+                                  "args": Object {
+                                    "id": "foo",
+                                  },
+                                },
+                                "field_user_simplePosts": Object {
+                                  "args": undefined,
+                                },
+                                "parent": undefined,
+                              }
+                    `);
   });
 
   test('filters', async () => {
@@ -180,35 +180,167 @@ describe('query translation integration tests', () => {
     );
 
     expect(mockRunQuery.mock.calls[0][0].query).toMatchInlineSnapshot(`
-            "LET user = DOCUMENT(users, \\"@field_user.args.id\\")
-            RETURN {
-              id: id
-              filteredPosts: (
-                FOR user_filteredPosts IN OUT user
-                  posted
-                FILTER user_filteredPosts.title =~ @field_user_filteredPosts.args.titleMatch
-                RETURN {
-                  id: id,
-                  title: title
-                }
-              )
-            }"
-        `);
+                                    "LET user = DOCUMENT(users, \\"@field_user.args.id\\")
+                                    RETURN {
+                                      id: id
+                                      filteredPosts: (
+                                        FOR user_filteredPosts IN OUT user
+                                          posted
+                                        FILTER user_filteredPosts.title =~ @field_user_filteredPosts.args.titleMatch
+                                        RETURN {
+                                          id: id,
+                                          title: title
+                                        }
+                                      )
+                                    }"
+                        `);
     expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchInlineSnapshot(`
-      Object {
-        "context": undefined,
-        "field_user": Object {
-          "args": Object {
-            "id": "foo",
-          },
-        },
-        "field_user_filteredPosts": Object {
-          "args": Object {
-            "titleMatch": "here",
-          },
-        },
-        "parent": undefined,
+                              Object {
+                                "context": undefined,
+                                "field_user": Object {
+                                  "args": Object {
+                                    "id": "foo",
+                                  },
+                                },
+                                "field_user_filteredPosts": Object {
+                                  "args": Object {
+                                    "titleMatch": "here",
+                                  },
+                                },
+                                "parent": undefined,
+                              }
+                    `);
+  });
+
+  test('paginates', async () => {
+    await run(
+      `
+      query GetUserAndPaginatedPosts {
+        user(id: "foo") {
+          id
+
+          paginatedPosts(count: 2) {
+            id
+            title
+          }
+        }
       }
+      `,
+      [
+        {
+          user: {
+            id: 'foo',
+            filteredPosts: [
+              {
+                id: 'b',
+                title: 'Hello again world',
+              },
+              {
+                id: 'c',
+                title: 'Come here often, world?',
+              },
+            ],
+          },
+        },
+      ]
+    );
+
+    expect(mockRunQuery.mock.calls[0][0].query).toMatchInlineSnapshot(`
+                  "LET user = DOCUMENT(users, \\"@field_user.args.id\\")
+                  RETURN {
+                    id: id
+                    paginatedPosts: (
+                      FOR user_paginatedPosts IN OUT user
+                        posted
+                      SORT user_paginatedPosts[@field_user_paginatedPosts.args.sort]
+                      LIMIT @field_user_paginatedPosts.args.skip, @field_user_paginatedPosts.args.count
+                      RETURN {
+                        id: id,
+                        title: title
+                      }
+                    )
+                  }"
+            `);
+    expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchInlineSnapshot(`
+                        Object {
+                          "context": undefined,
+                          "field_user": Object {
+                            "args": Object {
+                              "id": "foo",
+                            },
+                          },
+                          "field_user_paginatedPosts": Object {
+                            "args": Object {
+                              "count": 2,
+                              "sort": "title",
+                            },
+                          },
+                          "parent": undefined,
+                        }
+                `);
+  });
+
+  test('sorts descending', async () => {
+    await run(
+      `
+      query GetUserAndDescendingPosts {
+        user(id: "foo") {
+          id
+
+          descendingPosts {
+            id
+            title
+          }
+        }
+      }
+      `,
+      [
+        {
+          user: {
+            id: 'foo',
+            filteredPosts: [
+              {
+                id: 'b',
+                title: 'Hello again world',
+              },
+              {
+                id: 'c',
+                title: 'Come here often, world?',
+              },
+            ],
+          },
+        },
+      ]
+    );
+
+    expect(mockRunQuery.mock.calls[0][0].query).toMatchInlineSnapshot(`
+      "LET user = DOCUMENT(users, \\"@field_user.args.id\\")
+      RETURN {
+        id: id
+        descendingPosts: (
+          FOR user_descendingPosts IN OUT user
+            posted
+          SORT user_descendingPosts[\\"title\\"] DESC
+          RETURN {
+            id: id,
+            title: title
+          }
+        )
+      }"
     `);
+    expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchInlineSnapshot(`
+            Object {
+              "context": undefined,
+              "field_user": Object {
+                "args": Object {
+                  "id": "foo",
+                },
+              },
+              "field_user_descendingPosts": Object {
+                "args": undefined,
+              },
+              "parent": undefined,
+            }
+        `);
   });
 });

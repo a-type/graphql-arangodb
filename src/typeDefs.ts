@@ -5,6 +5,11 @@ enum EdgeDirection {
   ANY
 }
 
+enum SortOrder {
+  DESC
+  ASC
+}
+
 directive @document(
   collection: String!
   id: String
@@ -17,5 +22,15 @@ directive @node(
 
 directive @filter(
   statement: String!
+) on FIELD_DEFINITION
+
+directive @sort(
+  fieldName: String!
+  order: SortOrder
+) on FIELD_DEFINITION
+
+directive @limit(
+  skip: String
+  count: String!
 ) on FIELD_DEFINITION
 `;
