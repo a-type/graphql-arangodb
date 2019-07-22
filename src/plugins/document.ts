@@ -8,9 +8,9 @@ export const document: Plugin = {
       return `FOR ${fieldName} IN ${directiveArgs.collection}`;
     }
 
-    // for a singular field without an ID arg, we just take the first
+    // for a singular field without a key arg, we just take the first
     // item out of the list
-    if (!returnsList && !directiveArgs.id) {
+    if (!returnsList && !directiveArgs.key) {
       return lines([
         `FIRST(`,
         indent(`FOR ${fieldName}_i IN ${directiveArgs.collection}`),

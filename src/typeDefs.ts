@@ -48,4 +48,6 @@ directive @aql(
 directive @subquery(
   query: String!
 ) on FIELD_DEFINITION
+
+directive @key on FIELD_DEFINITION
 `;

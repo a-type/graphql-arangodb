@@ -4,7 +4,7 @@ export default `
   ${directiveTypeDefs}
 
   type User {
-    id: ID!
+    id: ID! @key
     name: String!
     bio: String
 
@@ -51,7 +51,7 @@ export default `
   }
 
   type Post {
-    id: ID!
+    id: ID! @key
     title: String!
     body: String!
   }

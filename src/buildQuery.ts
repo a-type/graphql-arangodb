@@ -38,6 +38,10 @@ const buildReturnProjection = ({
   query,
   fieldName,
 }: Omit<QueryBuilderArgs, 'parentName'>): string => {
+  if (!query.fieldNames.length) {
+    return `RETURN ${fieldName}`;
+  }
+
   const scalarFields = query.fieldNames.filter(
     name => !query.fieldQueries[name]
   );
