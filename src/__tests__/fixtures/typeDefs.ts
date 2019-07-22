@@ -8,6 +8,8 @@ export default `
     name: String!
     bio: String
 
+    fullName: String! @aql(expression: "CONCAT($parent.name, \\" \\", $parent.surname)")
+
     simplePosts: [Post!]!
       @node(
         edgeCollection: "posted"
