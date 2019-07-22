@@ -2,6 +2,31 @@
 
 An experimental library for 'translating' GraphQL operations into ArangoDB AQL queries which are designed to fetch all requested data in as few queries as possible. Flexibility is another objective; I want to empower the developer to define exactly how they want their GraphQL schema without being forced into a particular schema shape due to their database structure.
 
+- [graphql-arangodb](#graphql-arangodb)
+  - [Setup](#setup)
+    - [Installing](#installing)
+    - [Directive type definitions](#directive-type-definitions)
+    - [Adding a Database instance](#adding-a-database-instance)
+    - [Resolvers](#resolvers)
+      - [Customizing the resolver](#customizing-the-resolver)
+  - [Usage](#usage)
+    - [Interpolations](#interpolations)
+    - [Directives](#directives)
+      - [Enums](#enums)
+      - [`@document`](#document)
+      - [`@node`](#node)
+      - [`@edge/@edgeNode`](#edgeedgenode)
+      - [`@filter`](#filter)
+      - [`@sort`](#sort)
+      - [`@limit`](#limit)
+      - [`@subquery`](#subquery)
+      - [`@aql`](#aql)
+  - [Development](#development)
+    - [Local Development](#local-development)
+      - [`npm start` or `yarn start`](#npm-start-or-yarn-start)
+      - [`npm run build` or `yarn build`](#npm-run-build-or-yarn-build)
+      - [`npm test` or `yarn test`](#npm-test-or-yarn-test)
+
 ## Setup
 
 ### Installing
