@@ -29,20 +29,22 @@ export const createArgReplacer = (argGetter: (name: string) => any) => (
 /**
  * Creates a function which replaces all "$field" with the actual field name
  */
-const createFieldReplacer = (fieldName: string) => (text: string) => {
-  let modifiedText = '' + text;
-  let index;
-  while ((index = modifiedText.indexOf('$field')) >= 0) {
-    modifiedText = spliceString(modifiedText, index, '$field', fieldName);
-  }
-  return modifiedText;
-};
+const createFieldReplacer = (fieldName: string) => (text: string) =>
+  replaceAll(text, '$field', fieldName);
+const createParentReplacer = (parentName: string) => (text: string) =>
+  replaceAll(text, '$parent', parentName);
+const createContextReplacer = () => (text: string) =>
+  replaceAll(text, '$context', '@context');
 
-const createParentReplacer = (parentName: string) => (text: string) => {
+const replaceAll = (
+  text: string,
+  original: string,
+  replacement: string
+): string => {
   let modifiedText = '' + text;
   let index;
-  while ((index = modifiedText.indexOf('$parent')) >= 0) {
-    modifiedText = spliceString(modifiedText, index, '$parent', parentName);
+  while ((index = modifiedText.indexOf(original)) >= 0) {
+    modifiedText = spliceString(modifiedText, index, original, replacement);
   }
   return modifiedText;
 };
@@ -68,7 +70,8 @@ export const createAllReplacer = ({
   const argReplacer = createArgReplacer(createFieldArgGetter(fieldName));
   const fieldReplacer = createFieldReplacer(fieldName);
   const parentReplacer = createParentReplacer(parentName);
+  const contextReplacer = createContextReplacer();
 
   return (text: string): string =>
-    parentReplacer(fieldReplacer(argReplacer(text)));
+    contextReplacer(parentReplacer(fieldReplacer(argReplacer(text))));
 };

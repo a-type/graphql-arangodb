@@ -45,7 +45,7 @@ export default `
     friendsOfFriends: [User!]!
       @aql(
         statement: """
-        FOR $fieldName IN 2..2 ANY $parent friendOf OPTIONS {bfs: true, uniqueVertices: 'path'}
+        FOR $field IN 2..2 ANY $parent friendOf OPTIONS {bfs: true, uniqueVertices: 'path'}
         """
       )
   }
@@ -71,6 +71,18 @@ export default `
     users: [User!]!
       @document(
         collection: "users"
+      )
+
+    authorizedPosts: [Post!]!
+      @aql(
+        statement: """
+        LET authenticatedUser = DOCUMENT($context.userId)
+        LET allAuthorizedPosts = UNION_DISTINCT(
+          (FOR post IN posts FILTER post.public == true RETURN post),
+          (FOR post IN OUTBOUND authenticatedUser posted RETURN post)
+        )
+        FOR $field IN allAuthorizedPosts
+        """
       )
   }
 `;

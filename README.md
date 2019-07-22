@@ -2,218 +2,141 @@
 
 An experimental library for 'translating' GraphQL operations into ArangoDB AQL queries which are designed to fetch all requested data in as few queries as possible. Flexibility is another objective; I want to empower the developer to define exactly how they want their GraphQL schema without being forced into a particular schema shape due to their database structure.
 
-## Sketches
+## Setup
 
-Since this library is still in early phase, I'll be sketching ideas on how it might work here.
+### Installing
 
-### Query Translation
-
-Given a schema:
-
-```graphql
-enum RelationDirection {
-  OUT
-  IN
-  ANY
-}
-
-enum SortOrder {
-  ASC
-  DESC
-}
-
-scalar Date
-
-type Post {
-  id: ID!
-  title: String!
-  body: String
-  publishedAt: Date!
-}
-
-input UserFriendsFilterInput {
-  ageGt: Int
-  ageLt: Int
-}
-
-input UserFriendsPaginationInput {
-  offset: Int
-  count: Int = 10
-}
-
-input UserFriendsSortInput {
-  order: SortOrder
-  value: String
-}
-
-input UserFriendsInput {
-  filter: UserFriendsFilterInput
-  pagination: UserFriendsPaginationInput
-  sort: UserFriendsSortInput
-}
-
-input UserPostsFilterInput {
-  publishedAtGt: Date
-  publishedAtLt: Date
-}
-
-input UserPostsPaginationInput {
-  offset: Int
-  count: Int = 10
-}
-
-input UserPostsSortInput {
-  order: SortOrder
-  value: string
-}
-
-input UserPostsInput {
-  filter: UserPostsFilterInput
-  pagination: UserPostsPaginationInput
-  sort: UserPostsSortInput
-}
-
-type User {
-  id: ID!
-  name: String!
-  bio: String
-  age: Int!
-
-  posts(input: UserPostsInput): [Post!]!
-    @node(edgeCollection: "post", direction: OUT)
-
-  friends(input: UserFriendsInput): [User!]!
-    @node(edgeCollection: "friend", direction: ANY)
-}
-
-input GetUserInput {
-  id: ID
-}
-
-type Query {
-  user(input: GetUserInput!): User
-    @document(collection: "users", key: "$args.input.id")
-}
-```
-
-A GraphQL query:
-
-```graphql
-query UserWithFriendsPosts($userId: ID) {
-  user(input: { id: $userId }) {
-    id
-    name
-    friends(input: { filter: { ageGt: 10 } }) {
-      id
-      name
-      posts(input: { filter: { publishedAtGt: "2019-07-01" } }) {
-        id
-        title
-        body
-      }
-    }
-  }
-}
-```
-
-Running that query:
+Start by installing the library
 
 ```
-// this would be in a client or language of your choice
-graphql(UserWithFriendsPosts, { userId: 'someid' })
+npm i --save graphql-arangodb
 ```
 
-Would create an AQL query:
+You may also need to install peer dependencies if you don't have them:
 
-```aql
-LET user = DOCUMENT(users, 'someid')
-  RETURN {
-    "id": user.id,
-    "name": user.name,
-    "friends": (
-      FOR user_friends IN ANY user
-        friend
-        FILTER user_friends.age > 10
-        LIMIT 10
-        RETURN {
-          "id": user_friends.id,
-          "name": user_friends.name,
-          "posts": (
-            FOR user_friends_posts IN OUTBOUND user_friends
-              post
-              FILTER user_friends_posts.publishedAt > DATE_ISO8601("2019-07-01")
-              LIMIT 10
-              RETURN {
-                "id": user_friends_posts.id,
-                "title": user_friends_posts.title,
-                "body": user_friends_posts.body
-              }
-          )
-        }
-    )
-  }
+```
+npm i --save graphql graphql-middleware arangojs
 ```
 
-### Library Usage
+### Directive type definitions
 
-After experiments in this space yielding pretty tricky edge-cases for customization, I'm thinking about moving in a more framework-esque direction where this library is your primary method of constructing the final executable schema, for maximum control. This also makes sense with ArangoDB, since it's multi-model and can therefore act as your holistic data store for a larger number of use cases.
+To use the directives in this library, you need to add type definitions for them. The library exports pre-built type definitions for all directives, you just need to include them in your type definitions.
 
 ```ts
-import { makeSchema } from 'graphql-arangodb';
-import { Database, aql } from 'arangojs';
+import { directiveTypeDefs } from 'graphql-arangodb';
 
-const typeDefs = `
-  ... graphql schema with directives for arango queries
-`;
+const typeDefs = [directiveTypeDefs, ...allYourAppsOtherTypeDefs];
 
-// argumentResolvers allow you to modify incoming args before inserting them
-// into the AQL query. They must be separate because we are not guaranteed to actually
-// run the 'real' resolvers before the query is built and submitted.
-// TODO: validate this constraint / assumption more carefully to see if this can
-// be reworked to use normal resolvers.
-const argumentResolvers = {
+makeExecutableSchema({ typeDefs });
+```
+
+### Adding a Database instance
+
+The easiest way to connect `graphql-arangodb` to your ArangoDB database is to instantiate a `Database` class from `arangojs` and assign it to the `arangoDb` field of your GraphQL `context`:
+
+```ts
+const arangoDb = new Database({
+  url: 'http://localhost:8529',
+});
+arangoDb.useDatabase('mydb');
+arangoDb.useBasicAuth('mysecretuser', 'mysecretpassword');
+
+const context = {
+  arangoDb,
+};
+
+// pass the context into your GraphQL server according to documentation of the server
+```
+
+### Resolvers
+
+To start resolving queries using AQL, you need to set up resolvers for fields which will be resolved using those queries. For most use cases, this means all of the top-level fields in the root query and mutation types.
+
+For most people, adding the default `resolver` from `graphql-arangodb` should be enough:
+
+```ts
+import { resolver } from 'graphql-arangodb';
+
+const resolvers = {
   Query: {
-    User: {
-      posts: ({ pagination, ...rest }) => ({
-        ...rest,
-        pagination: {
-          // providing some defaults manually.. this could be done
-          // in the schema directly, but for the sake of example
-          offset: 0,
-          limit: 10,
-          ...(pagination || {}),
-        },
+    user: resolver,
+    users: resolver,
+    // ...
+  },
+};
+```
+
+#### Customizing the resolver
+
+However, there are some advanced scenarios where you may want to customize how the resolver works. To do this, you can import `createResolver` and create your own version of the default resolver. All config properties are optional.
+
+```ts
+import { createResolver, plugins as defaultPlugins } from 'graphql-arangodb';
+
+const resolver = createResolver({
+  // argument resolvers are called like regular resolvers, but they are used only by
+  // graphql-arangodb to apply custom transformations to field arguments before
+  // adding them to the AQL query. They are separated from normal resolvers for
+  // technical reasons related to how queries are extracted and built by the library.
+  // Whenver possible, prefer to put this logic inside the AQL query itself.
+  argumentResolvers: {
+    Query: {
+      searchUsers: args => ({
+        ...args,
+        // apply Lucene fuzzy indicator to user's match string before passing it to AQL
+        match: `${args.match}~`,
       }),
     },
   },
-};
 
-// these are more analogous to regular GraphQL resolvers. The `parent` is an async
-// function that resolves the parent data. You need to await it to get parent data.
-const customResolvers = {
-  Query: {
-    User: {
-      // suppose we wanted to enforce names are all UPPERCASE
-      name: async (loadParent, args, ctx, info) => {
-        const user = await loadParent();
+  // customize the key in your context which stores data which will be passed down
+  // into AQL queries via the $context interpolation
+  contextKey: 'arango_context',
 
-        return user.name.toUpperCase();
-      },
-    },
+  // customize the context property which is used to get your Database instance
+  contextDbKey: 'arango_db',
+
+  // advanced: you can reassign the names of the default directive plugins, or
+  // create your own plugin here. Plugins aren't documented yet, see source.
+  plugins: {
+    ...defaultPlugin,
+    custom: myCustomPlugin,
   },
-};
 
-const db = new Database();
-
-const schema = makeSchema({
-  typeDefs,
-  argumentResolvers,
-  resolvers: customResolvers,
-  db,
+  // you can specify a static database instance instead of passing one through context
+  db: new Database(),
 });
 ```
 
+## Usage
+
+Now that the library is configured, you can start adding directives to indicate how to query for your data.
+
+The following directives are supported out of the box:
+
+- `@document`: Selects a single document by ID or multiple documents from a collection
+- `@node`: Traverses an edge to another node from a parent document
+- `@edge`: Traverses an edge from a parent document, returning the edge itself
+- `@edgeNode`: Completes an `@edge` traversal, referencing the node at the other end
+- `@filter`: Adds a `FILTER` clause to a field
+- `@limit`: Adds a `LIMIT` clause to a field
+- `@sort`: Adds a `SORT` clause to a field
+- `@aql`: An all-purpose subquery directive for free-form AQL
+
+Usage of these directives is fairly similar to writing subqueries directly in AQL. The main thing to know is that you never write the `RETURN` statement. This library automatically constructs the correct `RETURN` projections based on the selected fields in the GraphQL query.
+
+### Interpolations
+
+All directives support the following interpolations in their parameter values:
+
+- `$parent`: Reference the parent document. If there is no parent (this is a root field in the query), references the `parent` from GraphQL, if that exists.
+- `$field`: Reference the field itself. In `@aql` directives, you must assign something to this binding to be returned as the value of the field. For all other purposes, you can use this to reference the current value (for instance, if you want to do a filter on `$field.name` or some other property).
+- `$args`: Reference the field args of the GraphQL query. You can use nested arg values. Usages of `$args` get turned into bind variables when the query is executed, and all field args are passed in as values.
+- `$context`: Reference values from the `arangoContext` key in your GraphQL context. Use this for global values across all queries, like the authenticated user ID.
+
 ---
+
+## Development
 
 This project was bootstrapped with [TSDX](https://github.com/jaredpalmer/tsdx).
 
