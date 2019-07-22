@@ -21,6 +21,7 @@ export type QueryFieldMap = {
 };
 
 export type Plugin = {
+  name: string;
   build: (args: {
     fieldName: string;
     directiveArgs: { [name: string]: any };

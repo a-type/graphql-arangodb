@@ -11,30 +11,30 @@ export default `
     simplePosts: [Post!]!
       @node(
         edgeCollection: "posted"
-        direction: OUT
+        direction: OUTBOUND
       )
 
     filteredPosts(titleMatch: String): [Post!]!
       @node(
         edgeCollection: "posted"
-        direction: OUT
+        direction: OUTBOUND
       )
       @filter(statement: "$field.title =~ $args.titleMatch")
 
     paginatedPosts(count: Int!, sort: String = "title", skip: Int): [Post!]!
       @node(
         edgeCollection: "posted"
-        direction: OUT
+        direction: OUTBOUND
       )
-      @sort(fieldName: "$args.sort")
+      @sort(property: "$args.sort")
       @limit(skip: "$args.skip", count: "$args.count")
 
     descendingPosts: [Post!]!
       @node(
         edgeCollection: "posted"
-        direction: OUT
+        direction: OUTBOUND
       )
-      @sort(fieldName: "title", order: DESC)
+      @sort(property: "title", order: DESC)
 
     friends: [FriendOfEdge!]!
       @edge(
@@ -43,8 +43,8 @@ export default `
       )
 
     friendsOfFriends: [User!]!
-      @aql(
-        statement: """
+      @subquery(
+        query: """
         FOR $field IN 2..2 ANY $parent friendOf OPTIONS {bfs: true, uniqueVertices: 'path'}
         """
       )
@@ -65,7 +65,7 @@ export default `
     user(id: ID!): User
       @document(
         collection: "users"
-        id: "$args.id"
+        key: "$args.id"
       )
 
     users: [User!]!
@@ -74,9 +74,9 @@ export default `
       )
 
     authorizedPosts: [Post!]!
-      @aql(
-        statement: """
-        LET authenticatedUser = DOCUMENT($context.userId)
+      @subquery(
+        query: """
+        LET authenticatedUser = DOCUMENT('users', $context.userId)
         LET allAuthorizedPosts = UNION_DISTINCT(
           (FOR post IN posts FILTER post.public == true RETURN post),
           (FOR post IN OUTBOUND authenticatedUser posted RETURN post)

@@ -121,7 +121,8 @@ The following directives are supported out of the box:
 - `@filter`: Adds a `FILTER` clause to a field
 - `@limit`: Adds a `LIMIT` clause to a field
 - `@sort`: Adds a `SORT` clause to a field
-- `@aql`: An all-purpose subquery directive for free-form AQL
+- `@subquery`: Craft your own sub-query in AQL to resolve a field
+- `@aql`: An all-purpose directive for free-form field resolution using AQL. Unlike `@subquery`, it's used to just compute a single expression without a sub-query.
 
 Usage of these directives is fairly similar to writing subqueries directly in AQL. The main thing to know is that you never write the `RETURN` statement. This library automatically constructs the correct `RETURN` projections based on the selected fields in the GraphQL query.
 
@@ -133,6 +134,209 @@ All directives support the following interpolations in their parameter values:
 - `$field`: Reference the field itself. In `@aql` directives, you must assign something to this binding to be returned as the value of the field. For all other purposes, you can use this to reference the current value (for instance, if you want to do a filter on `$field.name` or some other property).
 - `$args`: Reference the field args of the GraphQL query. You can use nested arg values. Usages of `$args` get turned into bind variables when the query is executed, and all field args are passed in as values.
 - `$context`: Reference values from the `arangoContext` key in your GraphQL context. Use this for global values across all queries, like the authenticated user ID.
+
+### Directives
+
+#### Enums
+
+Before we begin with the directives, this library also ships some enums which will be used in directive parameters. To use an enum, just supply its literal value to the parameter (don't enclose it in `"` marks).
+
+- `AqlEdgeDirection`: `OUTBOUND | INBOUND | ANY`
+- `AqlSortOrder`: `DESC | ASC`
+
+#### `@document`
+
+Selects a single or multiple documents (depending on whether the return type of the field is a list) from a specified collection. If a single document is selected, you can supply an `key` parameter to select it directly. This `key` parameter may be an argument interpolation (`$args.id`, etc), or a concrete value. It is passed directly into the `DOCUMENT` AQL function as the second parameter. If you do not specify an `key` parameter, the first item from the collection will be returned. To select a single item with a filter, use `@aql`.
+
+**Parameters**
+
+- `collection: String!`: The name of the collection of documents
+- `key: String`: A string value or interpolation that indicates the database key of the document.
+
+**Example**
+
+```graphql
+type Query {
+  user(id: ID!): User
+    @document(
+      collection: "users"
+      key: "$args.id"
+    )
+}
+```
+
+#### `@node`
+
+Traverses a relationship from the parent document to another document across an edge. `@node` skips over the edge and returns the related document as the field value. If you want to utilize properties from the edge, use `@edge/@edgeNode` instead.
+
+**Parameters**
+
+- `edgeCollection: String!`: The name of the collection which the edge belongs to
+- `direction: AqlEdgeDirection!`: The direction to traverse. Can be `ANY`.
+
+**Example**
+
+```graphql
+type User {
+  posts: [Post!]!
+    @node(
+      edgeCollection: "posted"
+      direction: OUTBOUND
+    )
+}
+```
+
+#### `@edge/@edgeNode`
+
+`@edge` traverses an edge from the parent document, returning the edge itself as the field value. `@edgeNode` can be used on the type which represents the edge to reference the document at the other end of it. `@edgeNode` should only be used on a field within a type represented by an edge. It has no directive parameters.
+
+**Parameters**
+
+Only `@edge` takes parameters:
+
+- `collection: String!`: The name of the collection for the edge
+- `direction: AqlEdgeDirection!`: The direction to traverse. Can be `ANY`.
+
+`@edgeNode` has no parameters.
+
+**Example**
+
+```graphql
+type User {
+  friends: [FriendOfEdge!]!
+    @edge(
+      collection: "friendOf"
+      direction: ANY
+    )
+}
+
+type FriendOfEdge {
+  strength: Int
+  user: User! @edgeNode
+}
+```
+
+#### `@filter`
+
+A complementary directive to `@document`, `@node`, or `@edge`. Adds a `FILTER` statement to refine results. As always, you can use interpolations to filter based on field parameters. `$field` is particularly helpful, as you will need it to filter based on the properties of each document checked (see example).
+
+**Parameters**
+
+- `statement: String!`: Basically, everything to the right of `FILTER`.
+
+**Example**
+
+```graphql
+type User {
+  posts(titleMatch: String): [Post!]!
+    @node(edgeCollection: "posted", direction: OUTBOUND)
+    @filter(statement: "$args.titleMatch == null || $field.title =~ $args.titleMatch")
+}
+```
+
+#### `@sort`
+
+A complementary directive to `@document`, `@node`, or `@edge`. Adds a `SORT` statement to order results.
+
+**Parameters**
+
+- `property: String!`: A property on the field to sort based on. The property name alone should be supplied (adding `$field.` is not necessary)
+- `order: AqlSortOrder!`: The order to sort by.
+
+**Example**
+
+```graphql
+type Query {
+  users: [User!]!
+    @document(collection: "users")
+    @sort(property: "name", direction: ASC)
+}
+```
+
+#### `@limit`
+
+A complementary directive to `@document`, `@node`, or `@edge`. Adds a `LIMIT` statement to paginate results.
+
+**Parameters**
+
+- `count: String!` A value or interpolation which indicates how many documents to return.
+- `skip: String`: A value or interpolation which indicates an initial skip count.
+
+**Example**
+
+```graphql
+type Query {
+  users(count: String!, skip: String = 0): [User!]!
+    @document(collection: "users")
+    @limit(count: "$args.count", skip: "$args.skip")
+}
+```
+
+#### `@subquery`
+
+Construct a free-form subquery to resolve a field. There are important rules for your subquery:
+
+- **Important**: You must assign the value you wish to resolve to the `$field` binding. This can be done for a single value using `LET $field = value`, or for a list by ending the subquery with `FOR $field IN list`. See the examples.
+- Do not wrap in `()`. This is done by the library.
+- Do not include a `RETURN` statement. All `RETURN` projections are constructed by the library for you to match the GraphQL query.
+
+**Parameters**
+
+- `query: String!`: Your subquery string, following the rules listed above.
+
+**Examples**
+
+_Resolving a single value_
+
+```graphql
+type Query {
+  userCount: Int!
+    @subquery(
+      query: """
+      LET $field = LENGTH(users)
+      """
+    )
+}
+```
+
+_Resolving multiple values_
+
+```graphql
+type Query {
+  """
+  Merges the list of public posts with the list of posts the user has posted (even
+  private) to create a master list of all posts accessible by the user.
+  """
+  authorizedPosts: [Post!]!
+    @subquery(
+      query: """
+      LET authenticatedUser = DOCUMENT('users', $context.userId)
+      LET allAuthorizedPOoss = UNION_DISTINCT(
+        (FOR post IN posts FILTER post.public == true RETURN post),
+        (FOR post in OUTBOUND authenticatedUser posted RETURN post)
+      )
+      FOR $field in allAuthorizedPosts
+      """
+    )
+}
+```
+
+#### `@aql`
+
+Free-form AQL for resolving individual fields using parent data or arbitrary expressions. Unlike `@subquery`, this should not be used for a full query structure, only for a simple expression.
+
+**Parameters**
+
+- `expression: String!`: The expression to evaluate. Use interpolations to access in-scope information, like the `$parent`.
+
+**Example**
+
+```graphql
+type User {
+  fullName: String!
+    @aql(expression: "CONCAT($parent.firstName, \" \", $parent.lastName)")
+}
+```
 
 ---
 

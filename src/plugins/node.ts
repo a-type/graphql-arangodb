@@ -2,6 +2,7 @@ import { Plugin } from '../types';
 import { lines, indent } from '../utils/strings';
 
 export const node: Plugin = {
+  name: 'node',
   build: ({ directiveArgs, returnsList, fieldName, parentName }) => {
     if (returnsList) {
       return `FOR ${fieldName} IN ${directiveArgs.direction} ${parentName} ${directiveArgs.edgeCollection}`;

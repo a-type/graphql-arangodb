@@ -6,6 +6,7 @@ import { limit } from './limit';
 import { edge } from './edge';
 import { edgeNode } from './edgeNode';
 import { aql } from './aql';
+import { subquery } from './subquery';
 
 export default {
   document,
@@ -16,4 +17,5 @@ export default {
   edge,
   edgeNode,
   aql,
+  subquery,
 };

@@ -1,23 +1,23 @@
 export const directiveTypeDefs = `
-enum EdgeDirection {
-  OUT
-  IN
+enum AqlEdgeDirection {
+  OUTBOUND
+  INBOUND
   ANY
 }
 
-enum SortOrder {
+enum AqlSortOrder {
   DESC
   ASC
 }
 
 directive @document(
   collection: String!
-  id: String
+  key: String
 ) on FIELD_DEFINITION
 
 directive @node(
   edgeCollection: String!
-  direction: EdgeDirection!
+  direction: AqlEdgeDirection!
 ) on FIELD_DEFINITION
 
 directive @filter(
@@ -25,8 +25,8 @@ directive @filter(
 ) on FIELD_DEFINITION
 
 directive @sort(
-  fieldName: String!
-  order: SortOrder
+  property: String!
+  order: AqlSortOrder
 ) on FIELD_DEFINITION
 
 directive @limit(
@@ -35,13 +35,17 @@ directive @limit(
 ) on FIELD_DEFINITION
 
 directive @edge(
-  direction: EdgeDirection!
+  direction: AqlEdgeDirection!
   collection: String!
 ) on FIELD_DEFINITION
 
 directive @edgeNode on FIELD_DEFINITION
 
 directive @aql(
-  statement: String!
+  expression: String!
+) on FIELD_DEFINITION
+
+directive @subquery(
+  query: String!
 ) on FIELD_DEFINITION
 `;
