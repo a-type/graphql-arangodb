@@ -21,6 +21,7 @@ An experimental library for 'translating' GraphQL operations into ArangoDB AQL q
       - [`@limit`](#limit)
       - [`@subquery`](#subquery)
       - [`@aql`](#aql)
+      - [`@key`](#key)
   - [Development](#development)
     - [Local Development](#local-development)
       - [`npm start` or `yarn start`](#npm-start-or-yarn-start)
@@ -360,6 +361,18 @@ Free-form AQL for resolving individual fields using parent data or arbitrary exp
 type User {
   fullName: String!
     @aql(expression: "CONCAT($parent.firstName, \" \", $parent.lastName)")
+}
+```
+
+#### `@key`
+
+Resolves the annotated field with the `_key` of the parent document. You can just attach this to any field which indicates the type's `ID` if you want your GraphQL IDs to be based on the underlying ArangoDB keys.
+
+**Example**
+
+```graphql
+type User {
+  id: @key
 }
 ```
 
