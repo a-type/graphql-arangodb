@@ -5,11 +5,13 @@ export const runQuery = async ({
   query,
   bindVars,
   db,
+  fieldName,
 }: {
   returnsList: boolean;
   query: string;
   bindVars: { [name: string]: any };
   db: Database;
+  fieldName: string;
 }) => {
   const queryResult = await db.query({
     query,
@@ -17,8 +19,5 @@ export const runQuery = async ({
   });
 
   const allResults = await queryResult.all();
-  if (!returnsList) {
-    return allResults[0];
-  }
-  return allResults;
+  return allResults[0][fieldName];
 };

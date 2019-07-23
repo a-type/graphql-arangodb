@@ -91,6 +91,7 @@ export const createResolver = ({
       query: queryString,
       bindVars,
       db: resolvedDb,
+      fieldName: info.fieldName,
     });
 
     log({
@@ -99,7 +100,7 @@ export const createResolver = ({
       details: [JSON.stringify(data)],
     });
 
-    return data[info.fieldName];
+    return data;
   } catch (err) {
     log({
       title: `Query execution error`,

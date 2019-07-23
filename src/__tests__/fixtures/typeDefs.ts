@@ -50,6 +50,9 @@ export default `
         FOR $field IN 2..2 ANY $parent friendOf OPTIONS {bfs: true, uniqueVertices: 'path'}
         """
       )
+
+    postsConnection(first: Int = 10, after: String!): UserPostsConnection!
+      @relayConnection(edgeCollection: "posted", edgeDirection: OUTBOUND, cursorProperty: "_key")
   }
 
   type Post {
@@ -61,6 +64,20 @@ export default `
   type FriendOfEdge {
     strength: Int
     user: User! @edgeNode
+  }
+
+  type UserPostsConnection {
+    edges: [UserPostEdge!]! @relayEdges
+    pageInfo: UserPostsPageInfo! @relayPageInfo
+  }
+
+  type UserPostEdge {
+    cursor: String!
+    node: Post! @relayNode
+  }
+
+  type UserPostsPageInfo {
+    hasNextPage: Boolean
   }
 
   type Query {

@@ -64,7 +64,11 @@ const buildReturnProjection = ({
             fieldName: joinFieldNames(fieldName, name),
             parentName: fieldName,
           });
-          return lines([`${name}: (`, indent(subQueryString), `)`]);
+          return lines([
+            `${name}: ${fieldQuery.returnsList ? '' : 'FIRST'}(`,
+            indent(subQueryString),
+            `)`,
+          ]);
         })
         .map(indent),
       ',\n'

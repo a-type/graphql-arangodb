@@ -10,9 +10,9 @@ An experimental library for 'translating' GraphQL operations into ArangoDB AQL q
     - [Resolvers](#resolvers)
       - [Customizing the resolver](#customizing-the-resolver)
   - [Usage](#usage)
+    - [Enums](#enums)
     - [Interpolations](#interpolations)
     - [Directives](#directives)
-      - [Enums](#enums)
       - [`@document`](#document)
       - [`@node`](#node)
       - [`@edge/@edgeNode`](#edgeedgenode)
@@ -22,6 +22,11 @@ An experimental library for 'translating' GraphQL operations into ArangoDB AQL q
       - [`@subquery`](#subquery)
       - [`@aql`](#aql)
       - [`@key`](#key)
+    - [Relay Directives (Experimental)](#relay-directives-experimental)
+      - [`@relayConnection`](#relayconnection)
+      - [`@relayEdges`](#relayedges)
+      - [`@relayPageInfo`](#relaypageinfo)
+      - [`@relayNode`](#relaynode)
   - [Development](#development)
     - [Local Development](#local-development)
       - [`npm start` or `yarn start`](#npm-start-or-yarn-start)
@@ -138,19 +143,14 @@ const resolver = createResolver({
 
 Now that the library is configured, you can start adding directives to indicate how to query for your data.
 
-The following directives are supported out of the box:
-
-- `@document`: Selects a single document by ID or multiple documents from a collection
-- `@node`: Traverses an edge to another node from a parent document
-- `@edge`: Traverses an edge from a parent document, returning the edge itself
-- `@edgeNode`: Completes an `@edge` traversal, referencing the node at the other end
-- `@filter`: Adds a `FILTER` clause to a field
-- `@limit`: Adds a `LIMIT` clause to a field
-- `@sort`: Adds a `SORT` clause to a field
-- `@subquery`: Craft your own sub-query in AQL to resolve a field
-- `@aql`: An all-purpose directive for free-form field resolution using AQL. Unlike `@subquery`, it's used to just compute a single expression without a sub-query.
-
 Usage of these directives is fairly similar to writing subqueries directly in AQL. The main thing to know is that you never write the `RETURN` statement. This library automatically constructs the correct `RETURN` projections based on the selected fields in the GraphQL query.
+
+### Enums
+
+Before we begin with the directives, this library also ships some enums which will be used in directive parameters. To use an enum, just supply its literal value to the parameter (don't enclose it in `"` marks).
+
+- `AqlEdgeDirection`: `OUTBOUND | INBOUND | ANY`
+- `AqlSortOrder`: `DESC | ASC`
 
 ### Interpolations
 
@@ -162,13 +162,6 @@ All directives support the following interpolations in their parameter values:
 - `$context`: Reference values from the `arangoContext` key in your GraphQL context. Use this for global values across all queries, like the authenticated user ID.
 
 ### Directives
-
-#### Enums
-
-Before we begin with the directives, this library also ships some enums which will be used in directive parameters. To use an enum, just supply its literal value to the parameter (don't enclose it in `"` marks).
-
-- `AqlEdgeDirection`: `OUTBOUND | INBOUND | ANY`
-- `AqlSortOrder`: `DESC | ASC`
 
 #### `@document`
 
@@ -375,6 +368,73 @@ type User {
   id: @key
 }
 ```
+
+### Relay Directives (Experimental)
+
+To support Relay use cases easily, there are also Relay-specific directives available.
+
+> The usage of these directives may change a bit over time, so be sure to check when upgrading the library!
+
+You must use all of the provided directives to properly construct a Relay connection, according to the rules below. The following example provides a full picture of how to create a Relay Connection:
+
+**Full Relay Example**
+
+```graphql
+type User {
+  postsConnection(first: Int = 10, after: String!): UserPostsConnection!
+    @relayConnection(
+      edgeCollection: "posted"
+      edgeDirection: OUTBOUND
+      cursorProperty: "_key"
+    )
+}
+
+type UserPostsConnection {
+  edges: [UserPostEdge!]! @relayEdges
+  pageInfo: UserPostsPageInfo! @relayPageInfo
+}
+
+type UserPostEdge {
+  cursor: String!
+  node: Post! @relayNode
+}
+
+type UserPostsPageInfo {
+  hasNextPage: Boolean!
+}
+
+type Post {
+  id: ID!
+  title: String!
+  body: String!
+}
+```
+
+All directives can be applied to either the field which is resolved, or the type it resolves to. Applying the directive to the type might be useful if you reuse the connection in multiple places and don't want to apply the directive to each one. However, doing so may make your schema harder to read.
+
+#### `@relayConnection`
+
+Add this directive to a field _or_ type definition to indicate that it should be resolved as a Relay Connection. The resolved value will have the standard `edges` and `pageInfo` parameters.
+
+> Note: Currently this only supports forward pagination using `after`.
+
+**Parameters**
+
+- `edgeCollection: String!`: The name of the collection of edges to traverse
+- `edgeDirection: AqlEdgeDirection!`: The direction to traverse edges. Can be `ANY`.
+- `cursorProperty: String!`: The property on each node to use as the cursor.
+
+#### `@relayEdges`
+
+Add this directive to a field _or_ type definition to indicate that it should be resolved as a Relay Edge list. Must be used as a child field of a type resolved by `@relayConnection`.
+
+#### `@relayPageInfo`
+
+Add this directive to a field _or_ type definition to indicate that it should be resolved as a Relay Page Info object. Must be used as a child field of a type resolved by `@relayConnection`.
+
+#### `@relayNode`
+
+Add this directive to a field _or_ type definition to indicate that it should be resolved as the Node of a Relay Edge. Must be used as a child field of a type resolved by `@relayEdge`.
 
 ---
 

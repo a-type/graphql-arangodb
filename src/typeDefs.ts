@@ -50,4 +50,16 @@ directive @subquery(
 ) on FIELD_DEFINITION
 
 directive @key on FIELD_DEFINITION
+
+directive @relayConnection(
+  edgeCollection: String!
+  edgeDirection: AqlEdgeDirection!
+  cursorProperty: String!
+) on FIELD_DEFINITION | OBJECT
+
+directive @relayEdges on FIELD_DEFINITION | OBJECT
+
+directive @relayPageInfo on FIELD_DEFINITION | OBJECT
+
+directive @relayNode on FIELD_DEFINITION | OBJECT
 `;
