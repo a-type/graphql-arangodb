@@ -8,6 +8,7 @@ import { edgeNode } from './edgeNode';
 import { aql } from './aql';
 import { subquery } from './subquery';
 import { key } from './key';
+import { virtual } from './virtual';
 
 export default {
   document,
@@ -20,4 +21,5 @@ export default {
   aql,
   subquery,
   key,
+  virtual,
 };

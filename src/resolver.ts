@@ -7,7 +7,11 @@ import {
 import { IGNORED_FIELD_NAMES } from './constants';
 import { getFieldDef } from 'graphql/execution/execute';
 import { DBQuery, PluginInstance, Plugin, DBQueryParams } from './types';
-import { getFieldDirectives, getDirectiveArgs } from './utils/directives';
+import {
+  getFieldDirectives,
+  getDirectiveArgs,
+  getTypeDirectives,
+} from './utils/directives';
 import {
   getArgumentsPlusDefaults,
   isListOrWrappedListType,
@@ -150,7 +154,9 @@ export const extractQueriesFromField = ({
   }
 
   const directives = getFieldDirectives(parentType, fieldName);
-  const pluginInstances = directives
+  const returnTypeDirectives = getTypeDirectives(schemaFieldDef.type);
+
+  const pluginInstances = [...directives, ...returnTypeDirectives]
     .map(directive => {
       const matchingPlugin = plugins[directive.name.value];
       if (!matchingPlugin) {

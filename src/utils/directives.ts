@@ -67,3 +67,15 @@ export const getFieldDirectives = (
 
   return field.astNode.directives || [];
 };
+
+export const getTypeDirectives = (type: GraphQLType) => {
+  if (!isObjectType(type)) {
+    return [];
+  }
+
+  if (!type.astNode) {
+    throw new Error(`Type "${type.name}" doesn't have an AST node`);
+  }
+
+  return type.astNode.directives || [];
+};

@@ -34,6 +34,7 @@
     "@types/ramda": "^0.26.16",
     "arangojs": "^6.10.0",
     "graphql": "^14.4.2",
+    "graphql-tools": "^4.0.5",
     "husky": "^3.0.0",
     "prettier": "^1.18.2",
     "pretty-quick": "^1.11.1",
@@ -42,8 +43,6 @@
     "typescript": "^3.5.3"
   },
   "dependencies": {
-    "graphql-middleware": "^3.0.2",
-    "graphql-tools": "^4.0.5",
     "ramda": "^0.26.1"
   }
 }
