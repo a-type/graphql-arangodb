@@ -170,6 +170,15 @@ input AqlLimitInput {
   """The number of documents to skip"""
   skip: String
 }
+
+"""
+These are the same as the OPTIONS for a regular edge traversal in AQL
+"""
+input AqlTraversalOptionsInput {
+  bfs: Boolean
+  uniqueVertices: String
+  uniqueEdges: String
+}
 ```
 
 ### Interpolations
@@ -218,6 +227,7 @@ Traverses a relationship from the parent document to another document across an 
 - `filter: String`: Adds a filter expression.
 - `sort: AqlSortInput`: Adds a sort expression.
 - `limit: AqlLimitInput`: Adds a limit expression.
+- `options: AqlTraverseOptionsInput`: Modify OPTIONS parameters on the traversal.
 
 **Example**
 
@@ -244,6 +254,7 @@ Only `@aqlEdge` takes parameters:
 - `filter: String`: Adds a filter expression. To filter on the node, you can use `$field_node` as an interpolation. Defaults `sortOn` to `$field`.
 - `sort: AqlSortInput` Adds a sort expression.
 - `limit: AqlLimitInput`: Adds a limit expression.
+- `options: AqlTraverseOptionsInput`: Modify OPTIONS parameters on the traversal.
 
 `@aqlEdgeNode` has no parameters.
 

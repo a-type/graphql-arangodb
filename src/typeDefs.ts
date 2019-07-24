@@ -28,9 +28,19 @@ input AqlLimitInput {
   skip: String
 }
 
-input AqlTraverseOptions {
+input AqlTraverseOptionsInput {
+  """Enables breadth-first search"""
   bfs: Boolean
+  """
+  - "path": guarantees no path is returned with a duplicate vertex
+  - "global": guarantees each vertex is visited at most once for the whole traversal
+  - "none": (default) no uniqueness check
+  """
   uniqueVertices: String
+  """
+  - "path": (default) guarantees no path is returned with a duplicate edge
+  - "none": allows paths to 'double back' onto edges cyclically
+  """
   uniqueEdges: String
 }
 
@@ -48,7 +58,7 @@ directive @aqlNode(
   filter: String
   sort: AqlSortInput
   limit: AqlLimitInput
-  options: AqlTraverseOptions
+  options: AqlTraverseOptionsInput
 ) on FIELD_DEFINITION
 
 directive @aqlEdge(
@@ -57,7 +67,7 @@ directive @aqlEdge(
   filter: String
   sort: AqlSortInput
   limit: AqlLimitInput
-  options: AqlTraverseOptions
+  options: AqlTraverseOptionsInput
 ) on FIELD_DEFINITION
 
 directive @aqlEdgeNode on FIELD_DEFINITION
