@@ -13,8 +13,11 @@ export const buildLimit = (count: string, skip?: string) => {
 
 export const buildFilter = (condition: string) => `FILTER ${condition}`;
 
-export const buildSort = (property: string, order: string = 'ASC') =>
-  `SORT $field[${interpolationOrString(property)}] ${order}`;
+export const buildSort = (
+  property: string,
+  order: string = 'ASC',
+  sortOn: string = '$field'
+) => `SORT ${sortOn}[${interpolationOrString(property)}] ${order}`;
 
 export const buildQueryModifiers = ({
   limit,
@@ -29,11 +32,12 @@ export const buildQueryModifiers = ({
   sort?: {
     property: string;
     order: string;
+    sortOn?: string;
   };
 }): string =>
   lines([
     filter && buildFilter(filter),
-    sort && buildSort(sort.property, sort.order),
+    sort && buildSort(sort.property, sort.order, sort.sortOn),
     limit && buildLimit(limit.count, limit.skip),
   ]);
 

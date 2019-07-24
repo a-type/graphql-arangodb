@@ -11,14 +11,12 @@ An experimental library for 'translating' GraphQL operations into ArangoDB AQL q
       - [Customizing the resolver](#customizing-the-resolver)
   - [Usage](#usage)
     - [Enums](#enums)
+    - [Inputs](#inputs)
     - [Interpolations](#interpolations)
     - [Directives](#directives)
       - [`@document`](#document)
       - [`@node`](#node)
       - [`@edge/@edgeNode`](#edgeedgenode)
-      - [`@filter`](#filter)
-      - [`@sort`](#sort)
-      - [`@limit`](#limit)
       - [`@subquery`](#subquery)
       - [`@aql`](#aql)
       - [`@key`](#key)
@@ -152,6 +150,28 @@ Before we begin with the directives, this library also ships some enums which wi
 - `AqlEdgeDirection`: `OUTBOUND | INBOUND | ANY`
 - `AqlSortOrder`: `DESC | ASC`
 
+### Inputs
+
+Some directives take complex inputs:
+
+```graphql
+input AqlSortInput {
+  """The property to sort on"""
+  property: String!
+  """The order to sort in. Defaults ASC"""
+  order: AqlSortOrder = ASC
+  """Change the object being sorted. Defaults to $field"""
+  sortOn: String
+}
+
+input AqlLimitInput {
+  """The upper limit of documents to return"""
+  count: String!
+  """The number of documents to skip"""
+  skip: String
+}
+```
+
 ### Interpolations
 
 All directives support the following interpolations in their parameter values:
@@ -171,6 +191,9 @@ Selects a single or multiple documents (depending on whether the return type of 
 
 - `collection: String!`: The name of the collection of documents
 - `key: String`: A string value or interpolation that indicates the database key of the document.
+- `filter: String`: Adds a filter expression. Applies to key-based single document fetching (the first document will be taken after filter is applied).
+- `sort: AqlSortInput`: Adds a sort expression. Applies to key-based single document fetching (the first document will be taken after sort is applied).
+- `limit: AqlLimitInput`: Adds a limit expression. Only works when `key` is not provided.
 
 **Example**
 
@@ -192,6 +215,9 @@ Traverses a relationship from the parent document to another document across an 
 
 - `edgeCollection: String!`: The name of the collection which the edge belongs to
 - `direction: AqlEdgeDirection!`: The direction to traverse. Can be `ANY`.
+- `filter: String`: Adds a filter expression.
+- `sort: AqlSortInput`: Adds a sort expression.
+- `limit: AqlLimitInput`: Adds a limit expression.
 
 **Example**
 
@@ -215,6 +241,9 @@ Only `@edge` takes parameters:
 
 - `collection: String!`: The name of the collection for the edge
 - `direction: AqlEdgeDirection!`: The direction to traverse. Can be `ANY`.
+- `filter: String`: Adds a filter expression. To filter on the node, you can use `$field_node` as an interpolation. Defaults `sortOn` to `$field`.
+- `sort: AqlSortInput` Adds a sort expression.
+- `limit: AqlLimitInput`: Adds a limit expression.
 
 `@edgeNode` has no parameters.
 
@@ -226,68 +255,16 @@ type User {
     @edge(
       collection: "friendOf"
       direction: ANY
+      sort: {
+        property: "name"
+        sortOn: "$field_node"
+      }
     )
 }
 
 type FriendOfEdge {
   strength: Int
   user: User! @edgeNode
-}
-```
-
-#### `@filter`
-
-A complementary directive to `@document`, `@node`, or `@edge`. Adds a `FILTER` statement to refine results. As always, you can use interpolations to filter based on field parameters. `$field` is particularly helpful, as you will need it to filter based on the properties of each document checked (see example).
-
-**Parameters**
-
-- `statement: String!`: Basically, everything to the right of `FILTER`.
-
-**Example**
-
-```graphql
-type User {
-  posts(titleMatch: String): [Post!]!
-    @node(edgeCollection: "posted", direction: OUTBOUND)
-    @filter(statement: "$args.titleMatch == null || $field.title =~ $args.titleMatch")
-}
-```
-
-#### `@sort`
-
-A complementary directive to `@document`, `@node`, or `@edge`. Adds a `SORT` statement to order results.
-
-**Parameters**
-
-- `property: String!`: A property on the field to sort based on. The property name alone should be supplied (adding `$field.` is not necessary)
-- `order: AqlSortOrder!`: The order to sort by.
-
-**Example**
-
-```graphql
-type Query {
-  users: [User!]!
-    @document(collection: "users")
-    @sort(property: "name", direction: ASC)
-}
-```
-
-#### `@limit`
-
-A complementary directive to `@document`, `@node`, or `@edge`. Adds a `LIMIT` statement to paginate results.
-
-**Parameters**
-
-- `count: String!` A value or interpolation which indicates how many documents to return.
-- `skip: String`: A value or interpolation which indicates an initial skip count.
-
-**Example**
-
-```graphql
-type Query {
-  users(count: String!, skip: String = 0): [User!]!
-    @document(collection: "users")
-    @limit(count: "$args.count", skip: "$args.skip")
 }
 ```
 
