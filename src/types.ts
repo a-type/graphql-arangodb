@@ -1,3 +1,5 @@
+import { Database } from 'arangojs';
+import { GraphQLResolveInfo } from 'graphql';
 export type DBQuery = {
   returnsList: boolean;
 
@@ -35,4 +37,25 @@ export type Plugin = {
 export type PluginInstance = {
   plugin: Plugin;
   directiveArgs: { [name: string]: any };
+};
+
+export type LibraryOptions = {
+  plugins?: { [name: string]: Plugin };
+  argumentResolvers?: { [pathPart: string]: any };
+  contextKey?: string;
+  db?: Database;
+  contextDbKey?: string;
+};
+
+export type AqlResolver = {
+  (parent: any, args: any, context: any, info: GraphQLResolveInfo): Promise<
+    any
+  >;
+  runCustomQuery: (args: {
+    queryString: string;
+    bindVars?: { [name: string]: any };
+    info: GraphQLResolveInfo;
+    parent: any;
+    context: any;
+  }) => Promise<any>;
 };

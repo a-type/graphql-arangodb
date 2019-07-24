@@ -11,6 +11,16 @@ type QueryBuilderArgs = {
 export const buildQuery = ({
   query,
   fieldName,
+}: Omit<QueryBuilderArgs, 'parentName'>): string => {
+  return lines([
+    `LET query = ${buildSubQuery({ query, fieldName, parentName: '@parent' })}`,
+    `RETURN query`,
+  ]);
+};
+
+export const buildSubQuery = ({
+  query,
+  fieldName,
   parentName,
 }: QueryBuilderArgs): string => {
   const statements = query.plugins.map(({ directiveArgs, plugin }) => {
@@ -62,7 +72,7 @@ const buildReturnProjection = ({
       nonScalarFields
         .map(name => {
           const fieldQuery = query.fieldQueries[name];
-          const subQueryString = buildQuery({
+          const subQueryString = buildSubQuery({
             query: fieldQuery,
             fieldName: joinFieldNames(fieldName, name),
             parentName: fieldName,

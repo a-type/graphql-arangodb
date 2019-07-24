@@ -1,0 +1,496 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`query translation integration tests does a Relay-style connection 1`] = `
+"LET query = FIRST(
+  user = DOCUMENT(users, @field_user.args.id)
+  RETURN {
+    id: user._key,
+    postsConnection: FIRST(
+      LET user_postsConnection_listPlusOne = (
+        FOR user_postsConnection_node, user_postsConnection_edge IN OUTBOUND user posted
+          OPTIONS {bfs: true}
+        SORT user_postsConnection_node._key
+        LIMIT @field_user_postsConnection.args.first + 1
+        RETURN MERGE(user_postsConnection_edge, { cursor: user_postsConnection_node._key, node: user_postsConnection_node })
+      )
+      LET user_postsConnection = {
+        edges: SLICE(user_postsConnection_listPlusOne, 0, @field_user_postsConnection.args.first)
+        pageInfo: { 
+          hasNextPage: LENGTH(user_postsConnection_listPlusOne) == @field_user_postsConnection.args.first + 1
+        }
+      }
+      RETURN {
+        edges: (
+          FOR user_postsConnection_edges IN user_postsConnection.edges
+          RETURN {
+            cursor: user_postsConnection_edges.cursor
+            node: FIRST(
+              LET user_postsConnection_edges_node = user_postsConnection_edges.node
+              RETURN {
+                title: user_postsConnection_edges_node.title
+                id: user_postsConnection_edges_node._key
+              }
+            )
+          }
+        ),
+        pageInfo: FIRST(
+          LET user_postsConnection_pageInfo = user_postsConnection.pageInfo
+          RETURN {
+            hasNextPage: user_postsConnection_pageInfo.hasNextPage
+          }
+        )
+      }
+    )
+  }
+)
+RETURN query"
+`;
+
+exports[`query translation integration tests does a Relay-style connection 2`] = `
+Object {
+  "context": Object {},
+  "field_user": Object {
+    "args": Object {
+      "id": "foo",
+    },
+  },
+  "field_user_id": Object {
+    "args": undefined,
+  },
+  "field_user_postsConnection": Object {
+    "args": Object {
+      "after": "opaqueCursor",
+      "first": 10,
+    },
+  },
+  "field_user_postsConnection_edges": Object {
+    "args": undefined,
+  },
+  "field_user_postsConnection_edges_node": Object {
+    "args": undefined,
+  },
+  "field_user_postsConnection_edges_node_id": Object {
+    "args": undefined,
+  },
+  "field_user_postsConnection_pageInfo": Object {
+    "args": undefined,
+  },
+  "parent": undefined,
+}
+`;
+
+exports[`query translation integration tests filters 1`] = `
+"LET query = FIRST(
+  user = DOCUMENT(users, @field_user.args.id)
+  RETURN {
+    id: user._key,
+    filteredPosts: (
+      FOR user_filteredPosts IN OUTBOUND user posted
+        FILTER user_filteredPosts.title =~ @field_user_filteredPosts.args.titleMatch
+      RETURN {
+        title: user_filteredPosts.title
+        id: user_filteredPosts._key
+      }
+    )
+  }
+)
+RETURN query"
+`;
+
+exports[`query translation integration tests filters 2`] = `
+Object {
+  "context": Object {},
+  "field_user": Object {
+    "args": Object {
+      "id": "foo",
+    },
+  },
+  "field_user_filteredPosts": Object {
+    "args": Object {
+      "titleMatch": "here",
+    },
+  },
+  "field_user_filteredPosts_id": Object {
+    "args": undefined,
+  },
+  "field_user_id": Object {
+    "args": undefined,
+  },
+  "parent": undefined,
+}
+`;
+
+exports[`query translation integration tests paginates 1`] = `
+"LET query = FIRST(
+  user = DOCUMENT(users, @field_user.args.id)
+  RETURN {
+    id: user._key,
+    paginatedPosts: (
+      FOR user_paginatedPosts IN OUTBOUND user posted
+        SORT user_paginatedPosts[@field_user_paginatedPosts.args.sort] ASC
+        LIMIT @field_user_paginatedPosts.args.skip @field_user_paginatedPosts.args.count
+      RETURN {
+        title: user_paginatedPosts.title
+        id: user_paginatedPosts._key
+      }
+    )
+  }
+)
+RETURN query"
+`;
+
+exports[`query translation integration tests paginates 2`] = `
+Object {
+  "context": Object {},
+  "field_user": Object {
+    "args": Object {
+      "id": "foo",
+    },
+  },
+  "field_user_id": Object {
+    "args": undefined,
+  },
+  "field_user_paginatedPosts": Object {
+    "args": Object {
+      "count": 2,
+      "skip": 0,
+      "sort": "title",
+    },
+  },
+  "field_user_paginatedPosts_id": Object {
+    "args": undefined,
+  },
+  "parent": undefined,
+}
+`;
+
+exports[`query translation integration tests passes traversal options 1`] = `
+"LET query = FIRST(
+  user = DOCUMENT(users, @field_user.args.id)
+  RETURN {
+    name: user.name
+    id: user._key,
+    bfsPosts: (
+      FOR user_bfsPosts IN OUTBOUND user posted
+        OPTIONS { bfs: true }
+      RETURN {
+        title: user_bfsPosts.title
+        id: user_bfsPosts._key
+      }
+    )
+  }
+)
+RETURN query"
+`;
+
+exports[`query translation integration tests passes traversal options 2`] = `
+Object {
+  "context": Object {},
+  "field_user": Object {
+    "args": Object {
+      "id": "foo",
+    },
+  },
+  "field_user_bfsPosts": Object {
+    "args": undefined,
+  },
+  "field_user_bfsPosts_id": Object {
+    "args": undefined,
+  },
+  "field_user_id": Object {
+    "args": undefined,
+  },
+  "parent": undefined,
+}
+`;
+
+exports[`query translation integration tests resolves a custom query inside the resolver with selections 1`] = `
+"LET query = FIRST(
+  LET createUser = FIRST(
+    
+                  INSERT {_key: @userId, role: @captain, name: @name} INTO users
+                  RETURN NEW
+                
+  )
+  RETURN {
+    name: createUser.name
+    id: createUser._key,
+    simplePosts: (
+      FOR createUser_simplePosts IN OUTBOUND createUser posted
+      RETURN {
+        title: createUser_simplePosts.title
+        id: createUser_simplePosts._key
+      }
+    )
+  }
+)
+RETURN query"
+`;
+
+exports[`query translation integration tests resolves a custom query inside the resolver with selections 2`] = `
+Object {
+  "context": Object {},
+  "field_createUser": Object {
+    "args": undefined,
+  },
+  "field_createUser_id": Object {
+    "args": undefined,
+  },
+  "field_createUser_simplePosts": Object {
+    "args": undefined,
+  },
+  "field_createUser_simplePosts_id": Object {
+    "args": undefined,
+  },
+  "name": "Bob",
+  "parent": undefined,
+  "role": "captain",
+  "userId": "foobar",
+}
+`;
+
+exports[`query translation integration tests runs aql expressions 1`] = `
+"LET query = FIRST(
+  user = DOCUMENT(users, @field_user.args.id)
+  RETURN {
+    id: user._key,
+    fullName: CONCAT(user.name, \\" \\", user.surname)
+  }
+)
+RETURN query"
+`;
+
+exports[`query translation integration tests runs aql expressions 2`] = `
+Object {
+  "context": Object {},
+  "field_user": Object {
+    "args": Object {
+      "id": "foo",
+    },
+  },
+  "field_user_fullName": Object {
+    "args": undefined,
+  },
+  "field_user_id": Object {
+    "args": undefined,
+  },
+  "parent": undefined,
+}
+`;
+
+exports[`query translation integration tests runs arbitrary subqueries 1`] = `
+"LET query = FIRST(
+  user = DOCUMENT(users, @field_user.args.id)
+  RETURN {
+    name: user.name
+    id: user._key,
+    friendsOfFriends: (
+      FOR user_friendsOfFriends IN 2..2 ANY user friendOf OPTIONS {bfs: true, uniqueVertices: 'path'}
+      RETURN {
+        name: user_friendsOfFriends.name
+        id: user_friendsOfFriends._key
+      }
+    )
+  }
+)
+RETURN query"
+`;
+
+exports[`query translation integration tests runs arbitrary subqueries 2`] = `
+Object {
+  "context": Object {},
+  "field_user": Object {
+    "args": Object {
+      "id": "foo",
+    },
+  },
+  "field_user_friendsOfFriends": Object {
+    "args": undefined,
+  },
+  "field_user_friendsOfFriends_id": Object {
+    "args": undefined,
+  },
+  "field_user_id": Object {
+    "args": undefined,
+  },
+  "parent": undefined,
+}
+`;
+
+exports[`query translation integration tests sorts descending 1`] = `
+"LET query = FIRST(
+  user = DOCUMENT(users, @field_user.args.id)
+  RETURN {
+    id: user._key,
+    descendingPosts: (
+      FOR user_descendingPosts IN OUTBOUND user posted
+        SORT user_descendingPosts[\\"title\\"] DESC
+      RETURN {
+        title: user_descendingPosts.title
+        id: user_descendingPosts._key
+      }
+    )
+  }
+)
+RETURN query"
+`;
+
+exports[`query translation integration tests sorts descending 2`] = `
+Object {
+  "context": Object {},
+  "field_user": Object {
+    "args": Object {
+      "id": "foo",
+    },
+  },
+  "field_user_descendingPosts": Object {
+    "args": undefined,
+  },
+  "field_user_descendingPosts_id": Object {
+    "args": undefined,
+  },
+  "field_user_id": Object {
+    "args": undefined,
+  },
+  "parent": undefined,
+}
+`;
+
+exports[`query translation integration tests translates a basic document query 1`] = `
+"LET query = FIRST(
+  user = DOCUMENT(users, @field_user.args.id)
+  RETURN {
+    name: user.name,
+    bio: user.bio
+    id: user._key
+  }
+)
+RETURN query"
+`;
+
+exports[`query translation integration tests translates a basic document query 2`] = `
+Object {
+  "context": Object {},
+  "field_user": Object {
+    "args": Object {
+      "id": "foo",
+    },
+  },
+  "field_user_id": Object {
+    "args": undefined,
+  },
+  "parent": undefined,
+}
+`;
+
+exports[`query translation integration tests translates a document with a nested node 1`] = `
+"LET query = FIRST(
+  user = DOCUMENT(users, @field_user.args.id)
+  RETURN {
+    name: user.name
+    id: user._key,
+    simplePosts: (
+      FOR user_simplePosts IN OUTBOUND user posted
+      RETURN {
+        title: user_simplePosts.title
+        id: user_simplePosts._key
+      }
+    )
+  }
+)
+RETURN query"
+`;
+
+exports[`query translation integration tests translates a document with a nested node 2`] = `
+Object {
+  "context": Object {},
+  "field_user": Object {
+    "args": Object {
+      "id": "foo",
+    },
+  },
+  "field_user_id": Object {
+    "args": undefined,
+  },
+  "field_user_simplePosts": Object {
+    "args": undefined,
+  },
+  "field_user_simplePosts_id": Object {
+    "args": undefined,
+  },
+  "parent": undefined,
+}
+`;
+
+exports[`query translation integration tests traverses edges 1`] = `
+"LET query = FIRST(
+  user = DOCUMENT(users, @field_user.args.id)
+  RETURN {
+    name: user.name
+    id: user._key,
+    friends: (
+      FOR user_friends_node, user_friends IN ANY user friendOf
+      RETURN {
+        strength: user_friends.strength
+        user: user_friends_node
+      }
+    )
+  }
+)
+RETURN query"
+`;
+
+exports[`query translation integration tests traverses edges 2`] = `
+Object {
+  "context": Object {},
+  "field_user": Object {
+    "args": Object {
+      "id": "foo",
+    },
+  },
+  "field_user_friends": Object {
+    "args": undefined,
+  },
+  "field_user_friends_user": Object {
+    "args": undefined,
+  },
+  "field_user_friends_user_id": Object {
+    "args": undefined,
+  },
+  "field_user_id": Object {
+    "args": undefined,
+  },
+  "parent": undefined,
+}
+`;
+
+exports[`query translation integration tests uses context values 1`] = `
+"LET query = (
+  LET authenticatedUser = DOCUMENT('users', @context.userId)
+  LET allAuthorizedPosts = UNION_DISTINCT(
+    (FOR post IN posts FILTER post.public == true RETURN post),
+    (FOR post IN OUTBOUND authenticatedUser posted RETURN post)
+  )
+  FOR authorizedPosts IN allAuthorizedPosts
+  RETURN {
+    title: authorizedPosts.title
+    id: authorizedPosts._key
+  }
+)
+RETURN query"
+`;
+
+exports[`query translation integration tests uses context values 2`] = `
+Object {
+  "context": Object {
+    "userId": "foo",
+  },
+  "field_authorizedPosts": Object {
+    "args": undefined,
+  },
+  "field_authorizedPosts_id": Object {
+    "args": undefined,
+  },
+  "parent": undefined,
+}
+`;

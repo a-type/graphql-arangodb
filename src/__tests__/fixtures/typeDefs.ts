@@ -121,4 +121,9 @@ export default `
         return: "allAuthorizedPosts"
       )
   }
+
+  type Mutation {
+    """This tests custom resolver query support"""
+    createUser: User!
+  }
 `;

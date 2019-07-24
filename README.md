@@ -25,6 +25,7 @@ An experimental library for 'translating' GraphQL operations into ArangoDB AQL q
       - [`@aqlRelayEdges`](#aqlrelayedges)
       - [`@aqlRelayPageInfo`](#aqlrelaypageinfo)
       - [`@aqlRelayNode`](#aqlrelaynode)
+    - [Running Custom Queries (Experimental)](#running-custom-queries-experimental)
     - [Mutations (Experimental)](#mutations-experimental)
   - [Development](#development)
     - [Local Development](#local-development)
@@ -82,15 +83,15 @@ const context = {
 
 To start resolving queries using AQL, you need to set up resolvers for fields which will be resolved using those queries. For most use cases, this means all of the top-level fields in the root query and mutation types.
 
-For most people, adding the default `resolver` from `graphql-arangodb` should be enough:
+For most people, adding the default `aqlResolver` from `graphql-arangodb` should be enough:
 
 ```ts
-import { resolver } from 'graphql-arangodb';
+import aqlResolver from 'graphql-arangodb';
 
 const resolvers = {
   Query: {
-    user: resolver,
-    users: resolver,
+    user: aqlResolver,
+    users: aqlResolver,
     // ...
   },
 };
@@ -448,6 +449,63 @@ Add this directive to a field _or_ type definition to indicate that it should be
 
 Add this directive to a field _or_ type definition to indicate that it should be resolved as the Node of a Relay Edge. Must be used as a child field of a type resolved by `@aqlRelayEdge`.
 
+### Running Custom Queries (Experimental)
+
+In addition to adding directives to your schema to resolve fields, you can also utilize a function called `runCustomQuery` to imperatively execute AQL queries like you would using the standard `arangojs` client, but with added support for projected return values based on the GraphQL selection!
+
+If that doesn't make sense, imagine a scenario where you are writing a query to do a full text search and you want to pre-process the user's input to work with Lucene. There's not currently a great place to put that processing logic; all the `@aql` directives assume you're just passing in the user's arguments verbatim.
+
+Instead, you can write your own resolver like so:
+
+```ts
+import aqlResolver from 'graphql-arangodb';
+
+const searchResolver = async (parent, args, context, info) => {
+  const fullTextSearchString = processSearchString(args.searchString);
+
+  return aqlResolver.runCustomQuery({
+    queryString: `
+    FOR matchedPost IN FULLTEXT(posts, "title", @searchString)
+      RETURN matchedPost
+    `,
+    bindVars: {
+      searchString: fullTextSearchString,
+    },
+    parent,
+    context,
+    info,
+  });
+}
+```
+
+Here we're using the `aqlResolver.runCustomQuery` function, which accepts a custom query string and bind variables. Write your own AQL however you'd like and return the data to resolve the current field (but be aware that your AQL will be run inside a larger query!).
+
+The magic comes in when the result is returned. Because you passed in the `parent`, `context`, and `info`, `graphql-arangodb` can extend your query to return the rest of the data the user needs for their GraphQL operation. In other words, if the user made the query:
+
+```graphql
+query Search($searchString: "good") {
+  search(searchString: $searchString) {
+    id
+    title
+    body
+
+    tags {
+      id
+      name
+    }
+
+    author {
+      id
+      name
+    }
+  }
+}
+```
+
+... they would still get `tags` and `author` resolved by your existing `@aql` directives on your schema, at no cost to you.
+
+`runCustomQuery` is a tool to give you as much power as possible to craft root queries and mutations, while still getting the benefits of your declarative directives to resolve deeply nested data in a single database round-trip.
+
 ### Mutations (Experimental)
 
 Simple mutations are essentially made possible using the same tools as queries, especially `@aqlSubquery`:
@@ -488,9 +546,7 @@ const resolvers = {
 
 You could also use the same trick to do some logic after.
 
-However, right now you can't modify any of the inputs to the query. It may seem natural that you could change `args` before passing it along, for instance, but the library actually uses other tools to get the `args` and would ignore your changes.
-
-This may change in the future, but for now, be aware of this limitation.
+If you want to modify the arguments before passing them on, or do even more advanced logic, see [the section on `runCustomQuery`](#running-custom-queries-experimental) above.
 
 ---
 
