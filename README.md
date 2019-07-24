@@ -25,6 +25,7 @@ An experimental library for 'translating' GraphQL operations into ArangoDB AQL q
       - [`@aqlRelayEdges`](#aqlrelayedges)
       - [`@aqlRelayPageInfo`](#aqlrelaypageinfo)
       - [`@aqlRelayNode`](#aqlrelaynode)
+    - [Mutations (Experimental)](#mutations-experimental)
   - [Development](#development)
     - [Local Development](#local-development)
       - [`npm start` or `yarn start`](#npm-start-or-yarn-start)
@@ -446,6 +447,50 @@ Add this directive to a field _or_ type definition to indicate that it should be
 #### `@aqlRelayNode`
 
 Add this directive to a field _or_ type definition to indicate that it should be resolved as the Node of a Relay Edge. Must be used as a child field of a type resolved by `@aqlRelayEdge`.
+
+### Mutations (Experimental)
+
+Simple mutations are essentially made possible using the same tools as queries, especially `@aqlSubquery`:
+
+```graphql
+type Mutation {
+  createPost(input: PostCreateInput!): Post!
+    @aqlSubquery(
+      query: """
+      INSERT { title: $args.input.title, body: $args.input.body } INTO posts
+      """
+      return: "NEW"
+    )
+}
+```
+
+The user can, of course, make selections on the returned `Post`, which will be properly converted into projections and subqueries just like a query operation.
+
+However, there are some limitations to how complex things can get before you want a proper resolver. If there is logic to be done before writing to the database, you can defer calling `graphql-arangodb`'s resolver until you have done it:
+
+```ts
+import { resolver } from 'graphql-arangodb';
+
+const resolvers = {
+  Mutation: {
+    createPost: async (parent, args, ctx, info) => {
+      const canCreatePost = await doSomethingElse(args, ctx);
+
+      if (!canCreatePost) {
+        throw new ForbiddenError('Hey, you can\'t do that!');
+      }
+
+      return resolver(parent, args, ctx, info);
+    }
+  }
+}
+```
+
+You could also use the same trick to do some logic after.
+
+However, right now you can't modify any of the inputs to the query. It may seem natural that you could change `args` before passing it along, for instance, but the library actually uses other tools to get the `args` and would ignore your changes.
+
+This may change in the future, but for now, be aware of this limitation.
 
 ---
 
