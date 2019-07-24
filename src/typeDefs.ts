@@ -28,6 +28,12 @@ input AqlLimitInput {
   skip: String
 }
 
+input AqlTraverseOptions {
+  bfs: Boolean
+  uniqueVertices: String
+  uniqueEdges: String
+}
+
 directive @aqlDocument(
   collection: String!
   key: String
@@ -42,6 +48,7 @@ directive @aqlNode(
   filter: String
   sort: AqlSortInput
   limit: AqlLimitInput
+  options: AqlTraverseOptions
 ) on FIELD_DEFINITION
 
 directive @aqlEdge(
@@ -50,6 +57,7 @@ directive @aqlEdge(
   filter: String
   sort: AqlSortInput
   limit: AqlLimitInput
+  options: AqlTraverseOptions
 ) on FIELD_DEFINITION
 
 directive @aqlEdgeNode on FIELD_DEFINITION

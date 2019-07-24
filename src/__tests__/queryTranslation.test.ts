@@ -73,29 +73,29 @@ describe('query translation integration tests', () => {
     );
 
     expect(mockRunQuery.mock.calls[0][0].query).toMatchInlineSnapshot(`
-      "FIRST(
-        user = DOCUMENT(users, @field_user.args.id)
-        RETURN {
-          name: user.name,
-          bio: user.bio
-          id: user._key
-        }
-      )"
-    `);
+                  "FIRST(
+                    user = DOCUMENT(users, @field_user.args.id)
+                    RETURN {
+                      name: user.name,
+                      bio: user.bio
+                      id: user._key
+                    }
+                  )"
+            `);
     expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchInlineSnapshot(`
-                                                                                          Object {
-                                                                                            "context": Object {},
-                                                                                            "field_user": Object {
-                                                                                              "args": Object {
-                                                                                                "id": "foo",
-                                                                                              },
-                                                                                            },
-                                                                                            "field_user_id": Object {
-                                                                                              "args": undefined,
-                                                                                            },
-                                                                                            "parent": undefined,
-                                                                                          }
-                                                            `);
+                                                                                                      Object {
+                                                                                                        "context": Object {},
+                                                                                                        "field_user": Object {
+                                                                                                          "args": Object {
+                                                                                                            "id": "foo",
+                                                                                                          },
+                                                                                                        },
+                                                                                                        "field_user_id": Object {
+                                                                                                          "args": undefined,
+                                                                                                        },
+                                                                                                        "parent": undefined,
+                                                                                                      }
+                                                                    `);
   });
 
   test('translates a document with a nested node', async () => {
@@ -138,41 +138,41 @@ describe('query translation integration tests', () => {
     );
 
     expect(mockRunQuery.mock.calls[0][0].query).toMatchInlineSnapshot(`
-      "FIRST(
-        user = DOCUMENT(users, @field_user.args.id)
-        RETURN {
-          name: user.name
-          id: user._key,
-          simplePosts: (
-            FOR user_simplePosts IN OUTBOUND user posted
-            RETURN {
-              title: user_simplePosts.title
-              id: user_simplePosts._key
-            }
-          )
-        }
-      )"
-    `);
+                  "FIRST(
+                    user = DOCUMENT(users, @field_user.args.id)
+                    RETURN {
+                      name: user.name
+                      id: user._key,
+                      simplePosts: (
+                        FOR user_simplePosts IN OUTBOUND user posted
+                        RETURN {
+                          title: user_simplePosts.title
+                          id: user_simplePosts._key
+                        }
+                      )
+                    }
+                  )"
+            `);
     expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchInlineSnapshot(`
-                                                                                          Object {
-                                                                                            "context": Object {},
-                                                                                            "field_user": Object {
-                                                                                              "args": Object {
-                                                                                                "id": "foo",
-                                                                                              },
-                                                                                            },
-                                                                                            "field_user_id": Object {
-                                                                                              "args": undefined,
-                                                                                            },
-                                                                                            "field_user_simplePosts": Object {
-                                                                                              "args": undefined,
-                                                                                            },
-                                                                                            "field_user_simplePosts_id": Object {
-                                                                                              "args": undefined,
-                                                                                            },
-                                                                                            "parent": undefined,
-                                                                                          }
-                                                            `);
+                    Object {
+                      "context": Object {},
+                      "field_user": Object {
+                        "args": Object {
+                          "id": "foo",
+                        },
+                      },
+                      "field_user_id": Object {
+                        "args": undefined,
+                      },
+                      "field_user_simplePosts": Object {
+                        "args": undefined,
+                      },
+                      "field_user_simplePosts_id": Object {
+                        "args": undefined,
+                      },
+                      "parent": undefined,
+                    }
+            `);
   });
 
   test('filters', async () => {
@@ -205,43 +205,43 @@ describe('query translation integration tests', () => {
     );
 
     expect(mockRunQuery.mock.calls[0][0].query).toMatchInlineSnapshot(`
-      "FIRST(
-        user = DOCUMENT(users, @field_user.args.id)
-        RETURN {
-          id: user._key,
-          filteredPosts: (
-            FOR user_filteredPosts IN OUTBOUND user posted
-              FILTER user_filteredPosts.title =~ @field_user_filteredPosts.args.titleMatch
-            RETURN {
-              title: user_filteredPosts.title
-              id: user_filteredPosts._key
-            }
-          )
-        }
-      )"
-    `);
+                  "FIRST(
+                    user = DOCUMENT(users, @field_user.args.id)
+                    RETURN {
+                      id: user._key,
+                      filteredPosts: (
+                        FOR user_filteredPosts IN OUTBOUND user posted
+                          FILTER user_filteredPosts.title =~ @field_user_filteredPosts.args.titleMatch
+                        RETURN {
+                          title: user_filteredPosts.title
+                          id: user_filteredPosts._key
+                        }
+                      )
+                    }
+                  )"
+            `);
     expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchInlineSnapshot(`
-                                                                                          Object {
-                                                                                            "context": Object {},
-                                                                                            "field_user": Object {
-                                                                                              "args": Object {
-                                                                                                "id": "foo",
-                                                                                              },
-                                                                                            },
-                                                                                            "field_user_filteredPosts": Object {
-                                                                                              "args": Object {
-                                                                                                "titleMatch": "here",
-                                                                                              },
-                                                                                            },
-                                                                                            "field_user_filteredPosts_id": Object {
-                                                                                              "args": undefined,
-                                                                                            },
-                                                                                            "field_user_id": Object {
-                                                                                              "args": undefined,
-                                                                                            },
-                                                                                            "parent": undefined,
-                                                                                          }
-                                                            `);
+                  Object {
+                    "context": Object {},
+                    "field_user": Object {
+                      "args": Object {
+                        "id": "foo",
+                      },
+                    },
+                    "field_user_filteredPosts": Object {
+                      "args": Object {
+                        "titleMatch": "here",
+                      },
+                    },
+                    "field_user_filteredPosts_id": Object {
+                      "args": undefined,
+                    },
+                    "field_user_id": Object {
+                      "args": undefined,
+                    },
+                    "parent": undefined,
+                  }
+            `);
   });
 
   test('paginates', async () => {
@@ -278,46 +278,46 @@ describe('query translation integration tests', () => {
     );
 
     expect(mockRunQuery.mock.calls[0][0].query).toMatchInlineSnapshot(`
-      "FIRST(
-        user = DOCUMENT(users, @field_user.args.id)
-        RETURN {
-          id: user._key,
-          paginatedPosts: (
-            FOR user_paginatedPosts IN OUTBOUND user posted
-              SORT user_paginatedPosts[@field_user_paginatedPosts.args.sort] ASC
-              LIMIT @field_user_paginatedPosts.args.skip @field_user_paginatedPosts.args.count
-            RETURN {
-              title: user_paginatedPosts.title
-              id: user_paginatedPosts._key
-            }
-          )
-        }
-      )"
-    `);
+                  "FIRST(
+                    user = DOCUMENT(users, @field_user.args.id)
+                    RETURN {
+                      id: user._key,
+                      paginatedPosts: (
+                        FOR user_paginatedPosts IN OUTBOUND user posted
+                          SORT user_paginatedPosts[@field_user_paginatedPosts.args.sort] ASC
+                          LIMIT @field_user_paginatedPosts.args.skip @field_user_paginatedPosts.args.count
+                        RETURN {
+                          title: user_paginatedPosts.title
+                          id: user_paginatedPosts._key
+                        }
+                      )
+                    }
+                  )"
+            `);
     expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchInlineSnapshot(`
-            Object {
-              "context": Object {},
-              "field_user": Object {
-                "args": Object {
-                  "id": "foo",
-                },
-              },
-              "field_user_id": Object {
-                "args": undefined,
-              },
-              "field_user_paginatedPosts": Object {
-                "args": Object {
-                  "count": 2,
-                  "skip": 0,
-                  "sort": "title",
-                },
-              },
-              "field_user_paginatedPosts_id": Object {
-                "args": undefined,
-              },
-              "parent": undefined,
-            }
-        `);
+                        Object {
+                          "context": Object {},
+                          "field_user": Object {
+                            "args": Object {
+                              "id": "foo",
+                            },
+                          },
+                          "field_user_id": Object {
+                            "args": undefined,
+                          },
+                          "field_user_paginatedPosts": Object {
+                            "args": Object {
+                              "count": 2,
+                              "skip": 0,
+                              "sort": "title",
+                            },
+                          },
+                          "field_user_paginatedPosts_id": Object {
+                            "args": undefined,
+                          },
+                          "parent": undefined,
+                        }
+                `);
   });
 
   test('sorts descending', async () => {
@@ -354,41 +354,41 @@ describe('query translation integration tests', () => {
     );
 
     expect(mockRunQuery.mock.calls[0][0].query).toMatchInlineSnapshot(`
-      "FIRST(
-        user = DOCUMENT(users, @field_user.args.id)
-        RETURN {
-          id: user._key,
-          descendingPosts: (
-            FOR user_descendingPosts IN OUTBOUND user posted
-              SORT user_descendingPosts[\\"title\\"] DESC
-            RETURN {
-              title: user_descendingPosts.title
-              id: user_descendingPosts._key
-            }
-          )
-        }
-      )"
-    `);
+                  "FIRST(
+                    user = DOCUMENT(users, @field_user.args.id)
+                    RETURN {
+                      id: user._key,
+                      descendingPosts: (
+                        FOR user_descendingPosts IN OUTBOUND user posted
+                          SORT user_descendingPosts[\\"title\\"] DESC
+                        RETURN {
+                          title: user_descendingPosts.title
+                          id: user_descendingPosts._key
+                        }
+                      )
+                    }
+                  )"
+            `);
     expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchInlineSnapshot(`
-                                                                                          Object {
-                                                                                            "context": Object {},
-                                                                                            "field_user": Object {
-                                                                                              "args": Object {
-                                                                                                "id": "foo",
-                                                                                              },
-                                                                                            },
-                                                                                            "field_user_descendingPosts": Object {
-                                                                                              "args": undefined,
-                                                                                            },
-                                                                                            "field_user_descendingPosts_id": Object {
-                                                                                              "args": undefined,
-                                                                                            },
-                                                                                            "field_user_id": Object {
-                                                                                              "args": undefined,
-                                                                                            },
-                                                                                            "parent": undefined,
-                                                                                          }
-                                                            `);
+                  Object {
+                    "context": Object {},
+                    "field_user": Object {
+                      "args": Object {
+                        "id": "foo",
+                      },
+                    },
+                    "field_user_descendingPosts": Object {
+                      "args": undefined,
+                    },
+                    "field_user_descendingPosts_id": Object {
+                      "args": undefined,
+                    },
+                    "field_user_id": Object {
+                      "args": undefined,
+                    },
+                    "parent": undefined,
+                  }
+            `);
   });
 
   test('traverses edges', async () => {
@@ -430,44 +430,44 @@ describe('query translation integration tests', () => {
     );
 
     expect(mockRunQuery.mock.calls[0][0].query).toMatchInlineSnapshot(`
-      "FIRST(
-        user = DOCUMENT(users, @field_user.args.id)
-        RETURN {
-          name: user.name
-          id: user._key,
-          friends: (
-            FOR user_friends_node, user_friends IN ANY user friendOf
-            RETURN {
-              strength: user_friends.strength
-              user: user_friends_node
-            }
-          )
-        }
-      )"
-    `);
+                  "FIRST(
+                    user = DOCUMENT(users, @field_user.args.id)
+                    RETURN {
+                      name: user.name
+                      id: user._key,
+                      friends: (
+                        FOR user_friends_node, user_friends IN ANY user friendOf
+                        RETURN {
+                          strength: user_friends.strength
+                          user: user_friends_node
+                        }
+                      )
+                    }
+                  )"
+            `);
     expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchInlineSnapshot(`
-                                                                                          Object {
-                                                                                            "context": Object {},
-                                                                                            "field_user": Object {
-                                                                                              "args": Object {
-                                                                                                "id": "foo",
-                                                                                              },
-                                                                                            },
-                                                                                            "field_user_friends": Object {
-                                                                                              "args": undefined,
-                                                                                            },
-                                                                                            "field_user_friends_user": Object {
-                                                                                              "args": undefined,
-                                                                                            },
-                                                                                            "field_user_friends_user_id": Object {
-                                                                                              "args": undefined,
-                                                                                            },
-                                                                                            "field_user_id": Object {
-                                                                                              "args": undefined,
-                                                                                            },
-                                                                                            "parent": undefined,
-                                                                                          }
-                                                            `);
+                  Object {
+                    "context": Object {},
+                    "field_user": Object {
+                      "args": Object {
+                        "id": "foo",
+                      },
+                    },
+                    "field_user_friends": Object {
+                      "args": undefined,
+                    },
+                    "field_user_friends_user": Object {
+                      "args": undefined,
+                    },
+                    "field_user_friends_user_id": Object {
+                      "args": undefined,
+                    },
+                    "field_user_id": Object {
+                      "args": undefined,
+                    },
+                    "parent": undefined,
+                  }
+            `);
   });
 
   test('runs arbitrary subqueries', async () => {
@@ -502,41 +502,41 @@ describe('query translation integration tests', () => {
     );
 
     expect(mockRunQuery.mock.calls[0][0].query).toMatchInlineSnapshot(`
-      "FIRST(
-        user = DOCUMENT(users, @field_user.args.id)
-        RETURN {
-          name: user.name
-          id: user._key,
-          friendsOfFriends: (
-            FOR user_friendsOfFriends IN 2..2 ANY user friendOf OPTIONS {bfs: true, uniqueVertices: 'path'}
-            RETURN {
-              name: user_friendsOfFriends.name
-              id: user_friendsOfFriends._key
-            }
-          )
-        }
-      )"
-    `);
+                  "FIRST(
+                    user = DOCUMENT(users, @field_user.args.id)
+                    RETURN {
+                      name: user.name
+                      id: user._key,
+                      friendsOfFriends: (
+                        FOR user_friendsOfFriends IN 2..2 ANY user friendOf OPTIONS {bfs: true, uniqueVertices: 'path'}
+                        RETURN {
+                          name: user_friendsOfFriends.name
+                          id: user_friendsOfFriends._key
+                        }
+                      )
+                    }
+                  )"
+            `);
     expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchInlineSnapshot(`
-                                                                                          Object {
-                                                                                            "context": Object {},
-                                                                                            "field_user": Object {
-                                                                                              "args": Object {
-                                                                                                "id": "foo",
-                                                                                              },
-                                                                                            },
-                                                                                            "field_user_friendsOfFriends": Object {
-                                                                                              "args": undefined,
-                                                                                            },
-                                                                                            "field_user_friendsOfFriends_id": Object {
-                                                                                              "args": undefined,
-                                                                                            },
-                                                                                            "field_user_id": Object {
-                                                                                              "args": undefined,
-                                                                                            },
-                                                                                            "parent": undefined,
-                                                                                          }
-                                                            `);
+                  Object {
+                    "context": Object {},
+                    "field_user": Object {
+                      "args": Object {
+                        "id": "foo",
+                      },
+                    },
+                    "field_user_friendsOfFriends": Object {
+                      "args": undefined,
+                    },
+                    "field_user_friendsOfFriends_id": Object {
+                      "args": undefined,
+                    },
+                    "field_user_id": Object {
+                      "args": undefined,
+                    },
+                    "parent": undefined,
+                  }
+            `);
   });
 
   test('uses context values', async () => {
@@ -569,33 +569,33 @@ describe('query translation integration tests', () => {
     );
 
     expect(mockRunQuery.mock.calls[0][0].query).toMatchInlineSnapshot(`
-      "(
-        LET authenticatedUser = DOCUMENT('users', @context.userId)
-        LET allAuthorizedPosts = UNION_DISTINCT(
-          (FOR post IN posts FILTER post.public == true RETURN post),
-          (FOR post IN OUTBOUND authenticatedUser posted RETURN post)
-        )
-        FOR authorizedPosts IN allAuthorizedPosts
-        RETURN {
-          title: authorizedPosts.title
-          id: authorizedPosts._key
-        }
-      )"
-    `);
+                  "(
+                    LET authenticatedUser = DOCUMENT('users', @context.userId)
+                    LET allAuthorizedPosts = UNION_DISTINCT(
+                      (FOR post IN posts FILTER post.public == true RETURN post),
+                      (FOR post IN OUTBOUND authenticatedUser posted RETURN post)
+                    )
+                    FOR authorizedPosts IN allAuthorizedPosts
+                    RETURN {
+                      title: authorizedPosts.title
+                      id: authorizedPosts._key
+                    }
+                  )"
+            `);
     expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchInlineSnapshot(`
-                                                                                          Object {
-                                                                                            "context": Object {
-                                                                                              "userId": "foo",
-                                                                                            },
-                                                                                            "field_authorizedPosts": Object {
-                                                                                              "args": undefined,
-                                                                                            },
-                                                                                            "field_authorizedPosts_id": Object {
-                                                                                              "args": undefined,
-                                                                                            },
-                                                                                            "parent": undefined,
-                                                                                          }
-                                                            `);
+                  Object {
+                    "context": Object {
+                      "userId": "foo",
+                    },
+                    "field_authorizedPosts": Object {
+                      "args": undefined,
+                    },
+                    "field_authorizedPosts_id": Object {
+                      "args": undefined,
+                    },
+                    "parent": undefined,
+                  }
+            `);
   });
 
   test('runs aql expressions', async () => {
@@ -620,31 +620,31 @@ describe('query translation integration tests', () => {
     );
 
     expect(mockRunQuery.mock.calls[0][0].query).toMatchInlineSnapshot(`
-      "FIRST(
-        user = DOCUMENT(users, @field_user.args.id)
-        RETURN {
-          id: user._key,
-          fullName: CONCAT(user.name, \\" \\", user.surname)
-        }
-      )"
-    `);
+                  "FIRST(
+                    user = DOCUMENT(users, @field_user.args.id)
+                    RETURN {
+                      id: user._key,
+                      fullName: CONCAT(user.name, \\" \\", user.surname)
+                    }
+                  )"
+            `);
     expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchInlineSnapshot(`
-                                                                                    Object {
-                                                                                      "context": Object {},
-                                                                                      "field_user": Object {
-                                                                                        "args": Object {
-                                                                                          "id": "foo",
-                                                                                        },
-                                                                                      },
-                                                                                      "field_user_fullName": Object {
-                                                                                        "args": undefined,
-                                                                                      },
-                                                                                      "field_user_id": Object {
-                                                                                        "args": undefined,
-                                                                                      },
-                                                                                      "parent": undefined,
-                                                                                    }
-                                                        `);
+                  Object {
+                    "context": Object {},
+                    "field_user": Object {
+                      "args": Object {
+                        "id": "foo",
+                      },
+                    },
+                    "field_user_fullName": Object {
+                      "args": undefined,
+                    },
+                    "field_user_id": Object {
+                      "args": undefined,
+                    },
+                    "parent": undefined,
+                  }
+            `);
   });
 
   test('does a Relay-style connection', async () => {
@@ -738,36 +738,114 @@ describe('query translation integration tests', () => {
       )"
     `);
     expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchInlineSnapshot(`
-                  Object {
-                    "context": Object {},
-                    "field_user": Object {
-                      "args": Object {
-                        "id": "foo",
-                      },
+                Object {
+                  "context": Object {},
+                  "field_user": Object {
+                    "args": Object {
+                      "id": "foo",
                     },
-                    "field_user_id": Object {
-                      "args": undefined,
+                  },
+                  "field_user_id": Object {
+                    "args": undefined,
+                  },
+                  "field_user_postsConnection": Object {
+                    "args": Object {
+                      "after": "opaqueCursor",
+                      "first": 10,
                     },
-                    "field_user_postsConnection": Object {
-                      "args": Object {
-                        "after": "opaqueCursor",
-                        "first": 10,
-                      },
-                    },
-                    "field_user_postsConnection_edges": Object {
-                      "args": undefined,
-                    },
-                    "field_user_postsConnection_edges_node": Object {
-                      "args": undefined,
-                    },
-                    "field_user_postsConnection_edges_node_id": Object {
-                      "args": undefined,
-                    },
-                    "field_user_postsConnection_pageInfo": Object {
-                      "args": undefined,
-                    },
-                    "parent": undefined,
-                  }
+                  },
+                  "field_user_postsConnection_edges": Object {
+                    "args": undefined,
+                  },
+                  "field_user_postsConnection_edges_node": Object {
+                    "args": undefined,
+                  },
+                  "field_user_postsConnection_edges_node_id": Object {
+                    "args": undefined,
+                  },
+                  "field_user_postsConnection_pageInfo": Object {
+                    "args": undefined,
+                  },
+                  "parent": undefined,
+                }
             `);
+  });
+
+  test('passes traversal options', async () => {
+    await run(
+      `
+      query GetUserAndPosts {
+        user(id: "foo") {
+          id
+          name
+
+          bfsPosts {
+            id
+            title
+          }
+        }
+      }
+      `,
+      [
+        {
+          user: {
+            id: 'foo',
+            name: 'Foo',
+            bfsPosts: [
+              {
+                id: 'a',
+                title: 'Hello world',
+              },
+              {
+                id: 'b',
+                title: 'Hello again world',
+              },
+              {
+                id: 'c',
+                title: 'Come here often, world?',
+              },
+            ],
+          },
+        },
+      ]
+    );
+
+    expect(mockRunQuery.mock.calls[0][0].query).toMatchInlineSnapshot(`
+            "FIRST(
+              user = DOCUMENT(users, @field_user.args.id)
+              RETURN {
+                name: user.name
+                id: user._key,
+                bfsPosts: (
+                  FOR user_bfsPosts IN OUTBOUND user posted
+                    OPTIONS { bfs: true }
+                  RETURN {
+                    title: user_bfsPosts.title
+                    id: user_bfsPosts._key
+                  }
+                )
+              }
+            )"
+        `);
+    expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchInlineSnapshot(`
+            Object {
+              "context": Object {},
+              "field_user": Object {
+                "args": Object {
+                  "id": "foo",
+                },
+              },
+              "field_user_bfsPosts": Object {
+                "args": undefined,
+              },
+              "field_user_bfsPosts_id": Object {
+                "args": undefined,
+              },
+              "field_user_id": Object {
+                "args": undefined,
+              },
+              "parent": undefined,
+            }
+        `);
   });
 });

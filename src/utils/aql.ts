@@ -44,5 +44,29 @@ export const buildQueryModifiers = ({
 export const buildSubquery = (contents: string, returnsList: boolean) =>
   lines([`${returnsList ? '' : 'FIRST'}(`, indent(contents), `)`]);
 
+export const buildOptions = (options?: {
+  bfs: boolean;
+  uniqueVertices: string;
+  uniqueEdges: string;
+}) => {
+  if (!options) {
+    return '';
+  }
+
+  const pairs = [
+    options.bfs !== undefined ? `bfs: ${options.bfs}` : '',
+    options.uniqueVertices !== undefined
+      ? `uniqueVertices: "${options.uniqueVertices}"`
+      : '',
+    options.uniqueEdges !== undefined
+      ? `uniqueEdges: "${options.uniqueEdges}"`
+      : '',
+  ]
+    .filter(Boolean)
+    .join(', ');
+
+  return `OPTIONS { ${pairs} }`;
+};
+
 const interpolationOrString = (value: string) =>
   value.startsWith('$') ? value : JSON.stringify(value);

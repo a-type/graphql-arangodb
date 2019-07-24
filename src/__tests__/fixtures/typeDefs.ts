@@ -46,6 +46,15 @@ export default `
         }
       )
 
+    bfsPosts: [Post!]!
+      @aqlNode(
+        edgeCollection: "posted"
+        direction: OUTBOUND
+        options: {
+          bfs: true
+        }
+      )
+
     friends: [FriendOfEdge!]!
       @aqlEdge(
         collection: "friendOf"
