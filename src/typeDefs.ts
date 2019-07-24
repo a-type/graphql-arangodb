@@ -28,7 +28,7 @@ input AqlLimitInput {
   skip: String
 }
 
-directive @document(
+directive @aqlDocument(
   collection: String!
   key: String
   filter: String
@@ -36,7 +36,7 @@ directive @document(
   limit: AqlLimitInput
 ) on FIELD_DEFINITION
 
-directive @node(
+directive @aqlNode(
   edgeCollection: String!
   direction: AqlEdgeDirection!
   filter: String
@@ -44,7 +44,7 @@ directive @node(
   limit: AqlLimitInput
 ) on FIELD_DEFINITION
 
-directive @edge(
+directive @aqlEdge(
   direction: AqlEdgeDirection!
   collection: String!
   filter: String
@@ -52,27 +52,27 @@ directive @edge(
   limit: AqlLimitInput
 ) on FIELD_DEFINITION
 
-directive @edgeNode on FIELD_DEFINITION
+directive @aqlEdgeNode on FIELD_DEFINITION
 
 directive @aql(
   expression: String!
 ) on FIELD_DEFINITION
 
-directive @subquery(
+directive @aqlSubquery(
   query: String!
 ) on FIELD_DEFINITION
 
-directive @key on FIELD_DEFINITION
+directive @aqlKey on FIELD_DEFINITION
 
-directive @relayConnection(
+directive @aqlRelayConnection(
   edgeCollection: String!
   edgeDirection: AqlEdgeDirection!
   cursorProperty: String!
 ) on FIELD_DEFINITION | OBJECT
 
-directive @relayEdges on FIELD_DEFINITION | OBJECT
+directive @aqlRelayEdges on FIELD_DEFINITION | OBJECT
 
-directive @relayPageInfo on FIELD_DEFINITION | OBJECT
+directive @aqlRelayPageInfo on FIELD_DEFINITION | OBJECT
 
-directive @relayNode on FIELD_DEFINITION | OBJECT
+directive @aqlRelayNode on FIELD_DEFINITION | OBJECT
 `;

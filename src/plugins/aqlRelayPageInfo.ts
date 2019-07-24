@@ -1,7 +1,7 @@
 import { Plugin } from '../types';
 import { lines } from '../utils/strings';
 
-export const relayPageInfo: Plugin = {
-  name: 'relayPageInfo',
+export const aqlRelayPageInfo: Plugin = {
+  name: 'aqlRelayPageInfo',
   build: () => lines([`LET $field = $parent.pageInfo`]),
 };

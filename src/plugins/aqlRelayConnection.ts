@@ -1,8 +1,8 @@
 import { Plugin } from '../types';
 import { lines, indent } from '../utils/strings';
 
-export const relayConnection: Plugin = {
-  name: 'relayConnection',
+export const aqlRelayConnection: Plugin = {
+  name: 'aqlRelayConnection',
   build: ({ directiveArgs }) => {
     const { cursorProperty, edgeDirection, edgeCollection } = directiveArgs;
 

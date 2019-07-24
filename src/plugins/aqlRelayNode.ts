@@ -1,7 +1,7 @@
 import { Plugin } from '../types';
 import { lines } from '../utils/strings';
 
-export const relayNode: Plugin = {
-  name: 'relayNode',
+export const aqlRelayNode: Plugin = {
+  name: 'aqlRelayNode',
   build: () => lines([`LET $field = $parent.node`]),
 };

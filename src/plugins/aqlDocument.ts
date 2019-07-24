@@ -2,8 +2,8 @@ import { Plugin } from '../types';
 import { lines, indent } from '../utils/strings';
 import { buildQueryModifiers } from '../utils/aql';
 
-export const document: Plugin = {
-  name: 'document',
+export const aqlDocument: Plugin = {
+  name: 'aqlDocument',
   build: ({ directiveArgs, returnsList }) => {
     const { collection, key } = directiveArgs;
 

@@ -1,7 +1,7 @@
 import { Plugin } from '../types';
 
-export const subquery: Plugin = {
-  name: 'subquery',
+export const aqlSubquery: Plugin = {
+  name: 'aqlSubquery',
   build: ({ directiveArgs }) => {
     return directiveArgs.query;
   },

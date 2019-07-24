@@ -14,17 +14,17 @@ An experimental library for 'translating' GraphQL operations into ArangoDB AQL q
     - [Inputs](#inputs)
     - [Interpolations](#interpolations)
     - [Directives](#directives)
-      - [`@document`](#document)
-      - [`@node`](#node)
-      - [`@edge/@edgeNode`](#edgeedgenode)
-      - [`@subquery`](#subquery)
+      - [`@aqlDocument`](#aqldocument)
+      - [`@aqlNode`](#aqlnode)
+      - [`@aqlEdge/@aqlEdgeNode`](#aqledgeaqledgenode)
+      - [`@aqlSubquery`](#aqlsubquery)
       - [`@aql`](#aql)
-      - [`@key`](#key)
+      - [`@aqlKey`](#aqlkey)
     - [Relay Directives (Experimental)](#relay-directives-experimental)
-      - [`@relayConnection`](#relayconnection)
-      - [`@relayEdges`](#relayedges)
-      - [`@relayPageInfo`](#relaypageinfo)
-      - [`@relayNode`](#relaynode)
+      - [`@aqlRelayConnection`](#aqlrelayconnection)
+      - [`@aqlRelayEdges`](#aqlrelayedges)
+      - [`@aqlRelayPageInfo`](#aqlrelaypageinfo)
+      - [`@aqlRelayNode`](#aqlrelaynode)
   - [Development](#development)
     - [Local Development](#local-development)
       - [`npm start` or `yarn start`](#npm-start-or-yarn-start)
@@ -183,7 +183,7 @@ All directives support the following interpolations in their parameter values:
 
 ### Directives
 
-#### `@document`
+#### `@aqlDocument`
 
 Selects a single or multiple documents (depending on whether the return type of the field is a list) from a specified collection. If a single document is selected, you can supply an `key` parameter to select it directly. This `key` parameter may be an argument interpolation (`$args.id`, etc), or a concrete value. It is passed directly into the `DOCUMENT` AQL function as the second parameter. If you do not specify an `key` parameter, the first item from the collection will be returned. To select a single item with a filter, use `@aql`.
 
@@ -200,16 +200,16 @@ Selects a single or multiple documents (depending on whether the return type of 
 ```graphql
 type Query {
   user(id: ID!): User
-    @document(
+    @aqlDocument(
       collection: "users"
       key: "$args.id"
     )
 }
 ```
 
-#### `@node`
+#### `@aqlNode`
 
-Traverses a relationship from the parent document to another document across an edge. `@node` skips over the edge and returns the related document as the field value. If you want to utilize properties from the edge, use `@edge/@edgeNode` instead.
+Traverses a relationship from the parent document to another document across an edge. `@aqlNode` skips over the edge and returns the related document as the field value. If you want to utilize properties from the edge, use `@aqlEdge/@aqlEdgeNode` instead.
 
 **Parameters**
 
@@ -224,20 +224,20 @@ Traverses a relationship from the parent document to another document across an 
 ```graphql
 type User {
   posts: [Post!]!
-    @node(
+    @aqlNode(
       edgeCollection: "posted"
       direction: OUTBOUND
     )
 }
 ```
 
-#### `@edge/@edgeNode`
+#### `@aqlEdge/@aqlEdgeNode`
 
-`@edge` traverses an edge from the parent document, returning the edge itself as the field value. `@edgeNode` can be used on the type which represents the edge to reference the document at the other end of it. `@edgeNode` should only be used on a field within a type represented by an edge. It has no directive parameters.
+`@aqlEdge` traverses an edge from the parent document, returning the edge itself as the field value. `@aqlEdgeNode` can be used on the type which represents the edge to reference the document at the other end of it. `@aqlEdgeNode` should only be used on a field within a type represented by an edge. It has no directive parameters.
 
 **Parameters**
 
-Only `@edge` takes parameters:
+Only `@aqlEdge` takes parameters:
 
 - `collection: String!`: The name of the collection for the edge
 - `direction: AqlEdgeDirection!`: The direction to traverse. Can be `ANY`.
@@ -245,14 +245,14 @@ Only `@edge` takes parameters:
 - `sort: AqlSortInput` Adds a sort expression.
 - `limit: AqlLimitInput`: Adds a limit expression.
 
-`@edgeNode` has no parameters.
+`@aqlEdgeNode` has no parameters.
 
 **Example**
 
 ```graphql
 type User {
   friends: [FriendOfEdge!]!
-    @edge(
+    @aqlEdge(
       collection: "friendOf"
       direction: ANY
       sort: {
@@ -264,11 +264,11 @@ type User {
 
 type FriendOfEdge {
   strength: Int
-  user: User! @edgeNode
+  user: User! @aqlEdgeNode
 }
 ```
 
-#### `@subquery`
+#### `@aqlSubquery`
 
 Construct a free-form subquery to resolve a field. There are important rules for your subquery:
 
@@ -287,7 +287,7 @@ _Resolving a single value_
 ```graphql
 type Query {
   userCount: Int!
-    @subquery(
+    @aqlSubquery(
       query: """
       LET $field = LENGTH(users)
       """
@@ -304,7 +304,7 @@ type Query {
   private) to create a master list of all posts accessible by the user.
   """
   authorizedPosts: [Post!]!
-    @subquery(
+    @aqlSubquery(
       query: """
       LET authenticatedUser = DOCUMENT('users', $context.userId)
       LET allAuthorizedPOoss = UNION_DISTINCT(
@@ -319,7 +319,7 @@ type Query {
 
 #### `@aql`
 
-Free-form AQL for resolving individual fields using parent data or arbitrary expressions. Unlike `@subquery`, this should not be used for a full query structure, only for a simple expression.
+Free-form AQL for resolving individual fields using parent data or arbitrary expressions. Unlike `@aqlSubquery`, this should not be used for a full query structure, only for a simple expression.
 
 **Parameters**
 
@@ -334,7 +334,7 @@ type User {
 }
 ```
 
-#### `@key`
+#### `@aqlKey`
 
 Resolves the annotated field with the `_key` of the parent document. You can just attach this to any field which indicates the type's `ID` if you want your GraphQL IDs to be based on the underlying ArangoDB keys.
 
@@ -342,7 +342,7 @@ Resolves the annotated field with the `_key` of the parent document. You can jus
 
 ```graphql
 type User {
-  id: @key
+  id: @aqlKey
 }
 ```
 
@@ -359,7 +359,7 @@ You must use all of the provided directives to properly construct a Relay connec
 ```graphql
 type User {
   postsConnection(first: Int = 10, after: String!): UserPostsConnection!
-    @relayConnection(
+    @aqlRelayConnection(
       edgeCollection: "posted"
       edgeDirection: OUTBOUND
       cursorProperty: "_key"
@@ -367,13 +367,13 @@ type User {
 }
 
 type UserPostsConnection {
-  edges: [UserPostEdge!]! @relayEdges
-  pageInfo: UserPostsPageInfo! @relayPageInfo
+  edges: [UserPostEdge!]! @aqlRelayEdges
+  pageInfo: UserPostsPageInfo! @aqlRelayPageInfo
 }
 
 type UserPostEdge {
   cursor: String!
-  node: Post! @relayNode
+  node: Post! @aqlRelayNode
 }
 
 type UserPostsPageInfo {
@@ -389,7 +389,7 @@ type Post {
 
 All directives can be applied to either the field which is resolved, or the type it resolves to. Applying the directive to the type might be useful if you reuse the connection in multiple places and don't want to apply the directive to each one. However, doing so may make your schema harder to read.
 
-#### `@relayConnection`
+#### `@aqlRelayConnection`
 
 Add this directive to a field _or_ type definition to indicate that it should be resolved as a Relay Connection. The resolved value will have the standard `edges` and `pageInfo` parameters.
 
@@ -401,17 +401,17 @@ Add this directive to a field _or_ type definition to indicate that it should be
 - `edgeDirection: AqlEdgeDirection!`: The direction to traverse edges. Can be `ANY`.
 - `cursorProperty: String!`: The property on each node to use as the cursor.
 
-#### `@relayEdges`
+#### `@aqlRelayEdges`
 
-Add this directive to a field _or_ type definition to indicate that it should be resolved as a Relay Edge list. Must be used as a child field of a type resolved by `@relayConnection`.
+Add this directive to a field _or_ type definition to indicate that it should be resolved as a Relay Edge list. Must be used as a child field of a type resolved by `@aqlRelayConnection`.
 
-#### `@relayPageInfo`
+#### `@aqlRelayPageInfo`
 
-Add this directive to a field _or_ type definition to indicate that it should be resolved as a Relay Page Info object. Must be used as a child field of a type resolved by `@relayConnection`.
+Add this directive to a field _or_ type definition to indicate that it should be resolved as a Relay Page Info object. Must be used as a child field of a type resolved by `@aqlRelayConnection`.
 
-#### `@relayNode`
+#### `@aqlRelayNode`
 
-Add this directive to a field _or_ type definition to indicate that it should be resolved as the Node of a Relay Edge. Must be used as a child field of a type resolved by `@relayEdge`.
+Add this directive to a field _or_ type definition to indicate that it should be resolved as the Node of a Relay Edge. Must be used as a child field of a type resolved by `@aqlRelayEdge`.
 
 ---
 

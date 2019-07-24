@@ -1,25 +1,25 @@
-import { document } from './document';
-import { node } from './node';
-import { edge } from './edge';
-import { edgeNode } from './edgeNode';
+import { aqlDocument } from './aqlDocument';
+import { aqlNode } from './aqlNode';
+import { aqlEdge } from './aqlEdge';
+import { aqlEdgeNode } from './aqlEdgeNode';
 import { aql } from './aql';
-import { subquery } from './subquery';
-import { key } from './key';
-import { relayConnection } from './relayConnection';
-import { relayEdges } from './relayEdges';
-import { relayPageInfo } from './relayPageInfo';
-import { relayNode } from './relayNode';
+import { aqlSubquery } from './aqlSubquery';
+import { aqlKey } from './aqlKey';
+import { aqlRelayConnection } from './aqlRelayConnection';
+import { aqlRelayEdges } from './aqlRelayEdges';
+import { aqlRelayPageInfo } from './aqlRelayPageInfo';
+import { aqlRelayNode } from './aqlRelayNode';
 
 export default {
-  document,
-  node,
-  edge,
-  edgeNode,
+  aqlDocument,
+  aqlNode,
+  aqlEdge,
+  aqlEdgeNode,
   aql,
-  subquery,
-  key,
-  relayConnection,
-  relayEdges,
-  relayPageInfo,
-  relayNode,
+  aqlSubquery,
+  aqlKey,
+  aqlRelayConnection,
+  aqlRelayEdges,
+  aqlRelayPageInfo,
+  aqlRelayNode,
 };
