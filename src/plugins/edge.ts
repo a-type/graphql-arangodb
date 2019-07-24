@@ -1,20 +1,33 @@
 import { Plugin } from '../types';
 import { lines, indent } from '../utils/strings';
+import { buildQueryModifiers } from '../utils/aql';
 
 export const edge: Plugin = {
   name: 'edge',
-  build: ({ directiveArgs, returnsList, fieldName, parentName }) => {
+  build: ({ directiveArgs, returnsList }) => {
+    const { direction, collection } = directiveArgs;
+
     if (returnsList) {
-      return `FOR ${fieldName}_node, ${fieldName} IN ${directiveArgs.direction} ${parentName} ${directiveArgs.edgeCollection}`;
+      return lines([
+        `FOR $field_node, $field IN ${direction} $parent ${collection}`,
+        indent(buildQueryModifiers(directiveArgs)),
+      ]);
     }
 
     return lines([
-      `LET ${fieldName} = FIRST(`,
+      `LET $field = FIRST(`,
       indent(
-        `FOR ${fieldName}_i_node, ${fieldName}_i IN ${directiveArgs.direction} ${parentName} ${directiveArgs.edgeCollection}`
+        `FOR $field_i_node, $field_i IN ${direction} $parent ${collection}`
       ),
-      indent('LIMIT 1'),
-      indent(`RETURN ${fieldName}_i`),
+      indent(
+        buildQueryModifiers({
+          ...directiveArgs,
+          limit: {
+            count: '1',
+          },
+        })
+      ),
+      indent(`RETURN $field_i`),
       ')',
     ]);
   },

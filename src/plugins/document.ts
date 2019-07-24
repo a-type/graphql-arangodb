@@ -1,30 +1,41 @@
 import { Plugin } from '../types';
 import { lines, indent } from '../utils/strings';
+import { buildQueryModifiers } from '../utils/aql';
 
 export const document: Plugin = {
   name: 'document',
-  build: ({ fieldName, directiveArgs, returnsList }) => {
+  build: ({ directiveArgs, returnsList }) => {
+    const { collection, key } = directiveArgs;
+
     if (returnsList) {
-      return `FOR ${fieldName} IN ${directiveArgs.collection}`;
+      return lines([
+        `FOR $field IN ${collection}`,
+        indent(buildQueryModifiers(directiveArgs)),
+      ]);
     }
 
     // for a singular field without a key arg, we just take the first
     // item out of the list
-    if (!returnsList && !directiveArgs.key) {
+    if (!returnsList && !key) {
       return lines([
-        `FIRST(`,
-        indent(`FOR ${fieldName}_i IN ${directiveArgs.collection}`),
-        indent(`LIMIT 1`),
-        indent(`RETURN ${fieldName}_i`),
+        `LET $field = FIRST(`,
+        indent(`FOR $field_i IN ${collection}`),
+        indent(
+          buildQueryModifiers({
+            ...directiveArgs,
+            limit: {
+              count: '1',
+            },
+          })
+        ),
+        indent(`RETURN $field_i`),
         `)`,
       ]);
     }
 
     // possibly dangerous? a check to see if this is meant to be an interpolation
     // or if we need to treat it as a literal string
-    const key = directiveArgs.key.startsWith('$')
-      ? directiveArgs.key
-      : `"${directiveArgs.key}"`;
-    return `LET ${fieldName} = DOCUMENT(${directiveArgs.collection}, ${key})`;
+    const resolvedKey = key.startsWith('$') ? key : `"${key}"`;
+    return `LET $field = DOCUMENT(${collection}, ${resolvedKey})`;
   },
 };

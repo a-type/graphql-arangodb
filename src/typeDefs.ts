@@ -10,33 +10,38 @@ enum AqlSortOrder {
   ASC
 }
 
+input AqlSortInput {
+  property: String!
+  order: AqlSortOrder = ASC
+}
+
+input AqlLimitInput {
+  count: String!
+  skip: String
+}
+
 directive @document(
   collection: String!
   key: String
+  filter: String
+  sort: AqlSortInput
+  limit: AqlLimitInput
 ) on FIELD_DEFINITION
 
 directive @node(
   edgeCollection: String!
   direction: AqlEdgeDirection!
-) on FIELD_DEFINITION
-
-directive @filter(
-  statement: String!
-) on FIELD_DEFINITION
-
-directive @sort(
-  property: String!
-  order: AqlSortOrder
-) on FIELD_DEFINITION
-
-directive @limit(
-  skip: String
-  count: String!
+  filter: String
+  sort: AqlSortInput
+  limit: AqlLimitInput
 ) on FIELD_DEFINITION
 
 directive @edge(
   direction: AqlEdgeDirection!
   collection: String!
+  filter: String
+  sort: AqlSortInput
+  limit: AqlLimitInput
 ) on FIELD_DEFINITION
 
 directive @edgeNode on FIELD_DEFINITION

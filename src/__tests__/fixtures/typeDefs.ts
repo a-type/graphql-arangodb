@@ -20,23 +20,31 @@ export default `
       @node(
         edgeCollection: "posted"
         direction: OUTBOUND
+        filter: "$field.title =~ $args.titleMatch"
       )
-      @filter(statement: "$field.title =~ $args.titleMatch")
 
-    paginatedPosts(count: Int!, sort: String = "title", skip: Int): [Post!]!
+    paginatedPosts(count: Int!, sort: String = "title", skip: Int = 0): [Post!]!
       @node(
         edgeCollection: "posted"
         direction: OUTBOUND
+        sort: {
+          property: "$args.sort"
+        }
+        limit: {
+          skip: "$args.skip"
+          count: "$args.count"
+        }
       )
-      @sort(property: "$args.sort")
-      @limit(skip: "$args.skip", count: "$args.count")
 
     descendingPosts: [Post!]!
       @node(
         edgeCollection: "posted"
         direction: OUTBOUND
+        sort: {
+          property: "title"
+          order: DESC
+        }
       )
-      @sort(property: "title", order: DESC)
 
     friends: [FriendOfEdge!]!
       @edge(
