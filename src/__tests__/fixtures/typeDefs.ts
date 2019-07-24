@@ -108,8 +108,8 @@ export default `
           (FOR post IN posts FILTER post.public == true RETURN post),
           (FOR post IN OUTBOUND authenticatedUser posted RETURN post)
         )
-        FOR $field IN allAuthorizedPosts
         """
+        return: "allAuthorizedPosts"
       )
   }
 `;

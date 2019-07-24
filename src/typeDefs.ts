@@ -60,6 +60,7 @@ directive @aql(
 
 directive @aqlSubquery(
   query: String!
+  return: String
 ) on FIELD_DEFINITION
 
 directive @aqlKey on FIELD_DEFINITION
