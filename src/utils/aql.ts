@@ -1,4 +1,4 @@
-import { lines } from './strings';
+import { lines, indent } from './strings';
 /**
  * Statement builders for AQL
  */
@@ -40,6 +40,9 @@ export const buildQueryModifiers = ({
     sort && buildSort(sort.property, sort.order, sort.sortOn),
     limit && buildLimit(limit.count, limit.skip),
   ]);
+
+export const buildSubquery = (contents: string, returnsList: boolean) =>
+  lines([`${returnsList ? '' : 'FIRST'}(`, indent(contents), `)`]);
 
 const interpolationOrString = (value: string) =>
   value.startsWith('$') ? value : JSON.stringify(value);

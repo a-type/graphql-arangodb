@@ -279,6 +279,7 @@ Construct a free-form subquery to resolve a field. There are important rules for
 **Parameters**
 
 - `query: String!`: Your subquery string, following the rules listed above.
+- `return: String`: An optional way to specify the name of a binding to return. By default, in a subquery, you must follow the important rule marked above and assign to `$field`. However, if you prefer, you may specify which variable binding you want to return within your subquery, and we will do this for you.
 
 **Examples**
 
@@ -307,12 +308,34 @@ type Query {
     @aqlSubquery(
       query: """
       LET authenticatedUser = DOCUMENT('users', $context.userId)
-      LET allAuthorizedPOoss = UNION_DISTINCT(
+      LET allAuthorizedPosts = UNION_DISTINCT(
         (FOR post IN posts FILTER post.public == true RETURN post),
         (FOR post in OUTBOUND authenticatedUser posted RETURN post)
       )
       FOR $field in allAuthorizedPosts
       """
+    )
+}
+```
+
+In the above example, instead of the final line, you could also pass `"allAuthorizedPosts"` to the `return` parameter:
+
+```graphql
+type Query {
+  """
+  Merges the list of public posts with the list of posts the user has posted (even
+  private) to create a master list of all posts accessible by the user.
+  """
+  authorizedPosts: [Post!]!
+    @aqlSubquery(
+      query: """
+      LET authenticatedUser = DOCUMENT('users', $context.userId)
+      LET allAuthorizedPosts = UNION_DISTINCT(
+        (FOR post IN posts FILTER post.public == true RETURN post),
+        (FOR post in OUTBOUND authenticatedUser posted RETURN post)
+      )
+      """
+      return: "allAuthorizedPosts"
     )
 }
 ```

@@ -28,6 +28,7 @@ export type Plugin = {
     fieldArgs: { [name: string]: any };
     returnsList: boolean;
     parentName: string;
+    children: () => string;
   }) => string;
 };
 

@@ -1,30 +1,24 @@
 import { Plugin } from '../types';
 import { lines, indent } from '../utils/strings';
-import { buildQueryModifiers } from '../utils/aql';
+import { buildQueryModifiers, buildSubquery } from '../utils/aql';
 
 export const aqlNode: Plugin = {
   name: 'aqlNode',
-  build: ({ directiveArgs, returnsList }) => {
+  build: ({ directiveArgs, returnsList, children }) => {
     const { direction, edgeCollection } = directiveArgs;
 
-    if (returnsList) {
-      return lines([
+    return buildSubquery(
+      lines([
         `FOR $field IN ${direction} $parent ${edgeCollection}`,
-        indent(buildQueryModifiers(directiveArgs)),
-      ]);
-    }
-
-    return lines([
-      `LET $field = FIRST(`,
-      indent(`FOR $field_i IN ${direction} $parent ${edgeCollection}`),
-      indent(
-        buildQueryModifiers({
-          ...directiveArgs,
-          limit: { count: '1' },
-        })
-      ),
-      indent(`RETURN $field_i`),
-      ')',
-    ]);
+        indent(
+          buildQueryModifiers({
+            ...directiveArgs,
+            limit: returnsList ? directiveArgs.limit : { count: '1' },
+          })
+        ),
+        children(),
+      ]),
+      returnsList
+    );
   },
 };

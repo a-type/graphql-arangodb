@@ -20,6 +20,8 @@ export const buildQuery = ({
       parentName,
     });
 
+    const children = () => buildReturnProjection({ query, fieldName });
+
     return interpolate(
       plugin.build({
         fieldName,
@@ -27,11 +29,12 @@ export const buildQuery = ({
         fieldArgs,
         directiveArgs,
         returnsList: query.returnsList,
+        children,
       })
     );
   });
 
-  return lines([...statements, buildReturnProjection({ query, fieldName })]);
+  return lines(statements);
 };
 
 const buildReturnProjection = ({
@@ -64,11 +67,7 @@ const buildReturnProjection = ({
             fieldName: joinFieldNames(fieldName, name),
             parentName: fieldName,
           });
-          return lines([
-            `${name}: ${fieldQuery.returnsList ? '' : 'FIRST'}(`,
-            indent(subQueryString),
-            `)`,
-          ]);
+          return `${name}: ${subQueryString}`;
         })
         .map(indent),
       ',\n'
