@@ -88,6 +88,7 @@ directive @aqlRelayConnection(
   edgeDirection: AqlEdgeDirection
   documentCollection: String
   cursorProperty: String!
+  linkedList: Boolean
 ) on FIELD_DEFINITION | OBJECT
 
 directive @aqlRelayEdges on FIELD_DEFINITION | OBJECT
