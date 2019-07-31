@@ -84,8 +84,9 @@ directive @aqlSubquery(
 directive @aqlKey on FIELD_DEFINITION
 
 directive @aqlRelayConnection(
-  edgeCollection: String!
-  edgeDirection: AqlEdgeDirection!
+  edgeCollection: String
+  edgeDirection: AqlEdgeDirection
+  documentCollection: String
   cursorProperty: String!
 ) on FIELD_DEFINITION | OBJECT
 
