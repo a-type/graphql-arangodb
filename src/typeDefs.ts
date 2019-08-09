@@ -12,6 +12,11 @@ enum AqlSortOrder {
   ASC
 }
 
+enum AqlRelayConnectionSource {
+  Default
+  FullText
+}
+
 input AqlSortInput {
   """The property to sort on"""
   property: String!
@@ -88,7 +93,10 @@ directive @aqlRelayConnection(
   edgeDirection: AqlEdgeDirection
   documentCollection: String
   cursorProperty: String!
-  linkedList: Boolean
+  source: AqlRelayConnectionSource = Default
+  fullTextTerm: String
+  fullTextProperty: String
+  cursorOnEdge: Boolean = false
 ) on FIELD_DEFINITION | OBJECT
 
 directive @aqlRelayEdges on FIELD_DEFINITION | OBJECT

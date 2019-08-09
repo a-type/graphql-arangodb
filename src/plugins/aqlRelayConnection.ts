@@ -5,28 +5,12 @@ import { buildSubquery } from '../utils/aql';
 export const aqlRelayConnection: Plugin = {
   name: 'aqlRelayConnection',
   build: ({ directiveArgs, returnsList, children }) => {
-    const {
-      cursorProperty,
-      edgeDirection,
-      edgeCollection,
-      documentCollection,
-      linkedList,
-    } = directiveArgs;
+    const { edgeCollection, documentCollection } = directiveArgs;
 
     if (!documentCollection && !edgeCollection) {
       throw new Error(
         'Either edgeCollection or documentCollection must be supplied to a Relay collection directive'
       );
-    }
-
-    if (linkedList) {
-      if (!edgeCollection) {
-        throw new Error(
-          'edgeCollection is required for a linked list Relay collection directive'
-        );
-      }
-
-      return buildSubquery(lines([`LET $field_listPlusOne = `]), returnsList);
     }
 
     const listPlusOneSubquery = createListPlusOneSubquery(directiveArgs);
@@ -55,10 +39,19 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
     edgeDirection,
     edgeCollection,
     documentCollection,
-    linkedList,
+    source,
+    fullTextTerm,
+    fullTextProperty,
+    cursorOnEdge,
   } = directiveArgs;
 
-  if (!linkedList && documentCollection) {
+  if (source === 'default' && documentCollection) {
+    if (cursorOnEdge) {
+      throw new Error(
+        `Cannot use cursorOnEdge when Relay connection represents a basic document collection`
+      );
+    }
+
     return buildSubquery(
       lines([
         `FOR $field_node IN ${documentCollection}`,
@@ -71,45 +64,45 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
     );
   }
 
-  if (linkedList) {
-    if (!edgeCollection || !documentCollection) {
+  if (source === 'FullText') {
+    if (cursorOnEdge) {
       throw new Error(
-        'edgeCollection and documentCollection are both required for a linked list Relay collection directive'
+        `Cannot use cursorOnEdge when Relay connection is using FullText source`
+      );
+    }
+
+    if (!fullTextTerm || !fullTextProperty || !documentCollection) {
+      throw new Error(
+        'fullTextTerm, fullTextProperty, and documentCollection are both required for a fulltext Relay connection directive'
       );
     }
 
     return buildSubquery(
       lines([
-        `LET $field_first = ${buildSubquery(
-          lines([
-            `FOR $field_first_candidate IN ${documentCollection}`,
-            indent(
-              `FILTER $field_first_candidate.${cursorProperty} == $args.cursor`
-            ),
-            indent(`LIMIT 1`),
-            indent(`RETURN $field_first_candidate`),
-          ]),
-          false
-        )}`,
-        `LET firstPlusOne = $args.first + 1`,
-        `FOR $field_node, $field_edge IN 1..firstPlusOne $field_first ${edgeCollection}`,
-        indent(`OPTIONS {bfs: true}`),
+        `FOR $field_node IN FULLTEXT(${documentCollection}, ${JSON.stringify(
+          fullTextProperty
+        )}, ${fullTextTerm})`,
+        `FILTER $field_node.${cursorProperty} > $args.after`,
         `SORT $field_node.${cursorProperty}`,
         `LIMIT $args.first + 1`,
-        `RETURN MERGE($field_edge, { cursor: $field_node.${cursorProperty}, node: $field_node })`,
+        `RETURN { cursor: $field_node.${cursorProperty}, node: $field_node }`,
       ]),
       true
     );
   }
 
+  const cursorExpression = cursorOnEdge
+    ? `$field_edge.${cursorProperty}`
+    : `$field_node.${cursorProperty}`;
+
   return buildSubquery(
     lines([
       `FOR $field_node, $field_edge IN ${edgeDirection} $parent ${edgeCollection}`,
       indent(`OPTIONS {bfs: true}`),
-      indent(`PRUNE $field_node.${cursorProperty} > $args.after`),
-      `SORT $field_node.${cursorProperty}`,
+      indent(`PRUNE ${cursorExpression} > $args.after`),
+      `SORT ${cursorExpression}`,
       `LIMIT $args.first + 1`,
-      `RETURN MERGE($field_edge, { cursor: $field_node.${cursorProperty}, node: $field_node })`,
+      `RETURN MERGE($field_edge, { cursor: ${cursorExpression}, node: $field_node })`,
     ]),
     true
   );

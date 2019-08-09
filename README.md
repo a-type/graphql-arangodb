@@ -151,6 +151,7 @@ Before we begin with the directives, this library also ships some enums which wi
 
 - `AqlEdgeDirection`: `OUTBOUND | INBOUND | ANY`
 - `AqlSortOrder`: `DESC | ASC`
+- `AqlRelayConnectionSource`: `Default | FullText`
 
 ### Inputs
 
@@ -158,18 +159,28 @@ Some directives take complex inputs:
 
 ```graphql
 input AqlSortInput {
-  """The property to sort on"""
+  """
+  The property to sort on
+  """
   property: String!
-  """The order to sort in. Defaults ASC"""
+  """
+  The order to sort in. Defaults ASC
+  """
   order: AqlSortOrder = ASC
-  """Change the object being sorted. Defaults to $field"""
+  """
+  Change the object being sorted. Defaults to $field
+  """
   sortOn: String
 }
 
 input AqlLimitInput {
-  """The upper limit of documents to return"""
+  """
+  The upper limit of documents to return
+  """
   count: String!
-  """The number of documents to skip"""
+  """
+  The number of documents to skip
+  """
   skip: String
 }
 
@@ -210,11 +221,7 @@ Selects a single or multiple documents (depending on whether the return type of 
 
 ```graphql
 type Query {
-  user(id: ID!): User
-    @aqlDocument(
-      collection: "users"
-      key: "$args.id"
-    )
+  user(id: ID!): User @aqlDocument(collection: "users", key: "$args.id")
 }
 ```
 
@@ -235,11 +242,7 @@ Traverses a relationship from the parent document to another document across an 
 
 ```graphql
 type User {
-  posts: [Post!]!
-    @aqlNode(
-      edgeCollection: "posted"
-      direction: OUTBOUND
-    )
+  posts: [Post!]! @aqlNode(edgeCollection: "posted", direction: OUTBOUND)
 }
 ```
 
@@ -268,10 +271,7 @@ type User {
     @aqlEdge(
       collection: "friendOf"
       direction: ANY
-      sort: {
-        property: "name"
-        sortOn: "$field_node"
-      }
+      sort: { property: "name", sortOn: "$field_node" }
     )
 }
 
@@ -436,6 +436,8 @@ Add this directive to a field _or_ type definition to indicate that it should be
 - `edgeCollection: String!`: The name of the collection of edges to traverse
 - `edgeDirection: AqlEdgeDirection!`: The direction to traverse edges. Can be `ANY`.
 - `cursorProperty: String!`: The property on each node to use as the cursor.
+- `cursorOnEdge: Boolean`: If true, the connection will index the cursor property from the edge document, not the node document.
+- `source: AqlRelayConnectionSource`: Supply `FullText` and the connection will draw from a full text index instead of a document collection.
 
 #### `@aqlRelayEdges`
 
@@ -475,7 +477,7 @@ const searchResolver = async (parent, args, context, info) => {
     context,
     info,
   });
-}
+};
 ```
 
 Here we're using the `aqlResolver.runCustomQuery` function, which accepts a custom query string and bind variables. Write your own AQL however you'd like and return the data to resolve the current field (but be aware that your AQL will be run inside a larger query!).
@@ -535,13 +537,13 @@ const resolvers = {
       const canCreatePost = await doSomethingElse(args, ctx);
 
       if (!canCreatePost) {
-        throw new ForbiddenError('Hey, you can\'t do that!');
+        throw new ForbiddenError("Hey, you can't do that!");
       }
 
       return resolver(parent, args, ctx, info);
-    }
-  }
-}
+    },
+  },
+};
 ```
 
 You could also use the same trick to do some logic after.
