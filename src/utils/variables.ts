@@ -58,7 +58,7 @@ export const buildPrefixedVariables = ({
 
 const filterUnused = (vars: { [name: string]: any }, queryString: string) =>
   Object.keys(vars).reduce((filtered, key) => {
-    if (!queryString.includes(`@${key}`)) {
+    if (!new RegExp(`@${key}\\W`).test(queryString)) {
       return filtered;
     }
     return {
