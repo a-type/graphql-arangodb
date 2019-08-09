@@ -44,6 +44,7 @@ export const runQuery = async ({
       query,
       parent,
       contextValues: context[contextKey],
+      queryString,
     });
 
     log({

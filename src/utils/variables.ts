@@ -34,19 +34,35 @@ export const buildPrefixedVariables = ({
   query,
   parent,
   contextValues,
+  queryString,
 }: {
   fieldName: string;
   query: DBQuery;
   parent?: any;
   contextValues?: any;
+  queryString: string;
 }) => {
-  return {
-    // passing the parent as a variable lets us cross the graphql -> graphdb boundary
-    // and give queries access to their parent objects from our GraphQL context
-    parent,
-    // the user may supply values in their context which they always want passed to queries
-    context: contextValues,
+  return filterUnused(
+    {
+      // passing the parent as a variable lets us cross the graphql -> graphdb boundary
+      // and give queries access to their parent objects from our GraphQL context
+      parent,
+      // the user may supply values in their context which they always want passed to queries
+      context: contextValues,
 
-    ...buildPrefixedFieldArgVariables({ fieldName, query }),
-  };
+      ...buildPrefixedFieldArgVariables({ fieldName, query }),
+    },
+    queryString
+  );
 };
+
+const filterUnused = (vars: { [name: string]: any }, queryString: string) =>
+  Object.keys(vars).reduce((filtered, key) => {
+    if (!queryString.includes(`@${key}`)) {
+      return filtered;
+    }
+    return {
+      ...filtered,
+      [key]: vars[key],
+    };
+  }, {});

@@ -14,7 +14,7 @@ describe('query translation integration tests', () => {
         authorizedPosts: aqlResolver,
       },
       Mutation: {
-        createUser: async (parent, args, ctx, info) => {
+        createUser: async (parent: any, args: any, ctx: any, info: any) => {
           const bindVars = {
             userId: 'foobar',
             role: 'captain',

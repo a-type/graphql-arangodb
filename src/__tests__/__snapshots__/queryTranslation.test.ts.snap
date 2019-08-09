@@ -9,6 +9,7 @@ exports[`query translation integration tests does a Relay-style connection 1`] =
       LET user_postsConnection_listPlusOne = (
         FOR user_postsConnection_node, user_postsConnection_edge IN OUTBOUND user posted
           OPTIONS {bfs: true}
+          PRUNE user_postsConnection_node._key > @field_user_postsConnection.args.after
         SORT user_postsConnection_node._key
         LIMIT @field_user_postsConnection.args.first + 1
         RETURN MERGE(user_postsConnection_edge, { cursor: user_postsConnection_node._key, node: user_postsConnection_node })
@@ -48,14 +49,10 @@ RETURN query"
 
 exports[`query translation integration tests does a Relay-style connection 2`] = `
 Object {
-  "context": Object {},
   "field_user": Object {
     "args": Object {
       "id": "foo",
     },
-  },
-  "field_user_id": Object {
-    "args": undefined,
   },
   "field_user_postsConnection": Object {
     "args": Object {
@@ -63,19 +60,6 @@ Object {
       "first": 10,
     },
   },
-  "field_user_postsConnection_edges": Object {
-    "args": undefined,
-  },
-  "field_user_postsConnection_edges_node": Object {
-    "args": undefined,
-  },
-  "field_user_postsConnection_edges_node_id": Object {
-    "args": undefined,
-  },
-  "field_user_postsConnection_pageInfo": Object {
-    "args": undefined,
-  },
-  "parent": undefined,
 }
 `;
 
@@ -99,7 +83,6 @@ RETURN query"
 
 exports[`query translation integration tests filters 2`] = `
 Object {
-  "context": Object {},
   "field_user": Object {
     "args": Object {
       "id": "foo",
@@ -110,13 +93,6 @@ Object {
       "titleMatch": "here",
     },
   },
-  "field_user_filteredPosts_id": Object {
-    "args": undefined,
-  },
-  "field_user_id": Object {
-    "args": undefined,
-  },
-  "parent": undefined,
 }
 `;
 
@@ -141,14 +117,10 @@ RETURN query"
 
 exports[`query translation integration tests paginates 2`] = `
 Object {
-  "context": Object {},
   "field_user": Object {
     "args": Object {
       "id": "foo",
     },
-  },
-  "field_user_id": Object {
-    "args": undefined,
   },
   "field_user_paginatedPosts": Object {
     "args": Object {
@@ -157,10 +129,6 @@ Object {
       "sort": "title",
     },
   },
-  "field_user_paginatedPosts_id": Object {
-    "args": undefined,
-  },
-  "parent": undefined,
 }
 `;
 
@@ -185,22 +153,11 @@ RETURN query"
 
 exports[`query translation integration tests passes traversal options 2`] = `
 Object {
-  "context": Object {},
   "field_user": Object {
     "args": Object {
       "id": "foo",
     },
   },
-  "field_user_bfsPosts": Object {
-    "args": undefined,
-  },
-  "field_user_bfsPosts_id": Object {
-    "args": undefined,
-  },
-  "field_user_id": Object {
-    "args": undefined,
-  },
-  "parent": undefined,
 }
 `;
 
@@ -229,21 +186,7 @@ RETURN query"
 
 exports[`query translation integration tests resolves a custom query inside the resolver with selections 2`] = `
 Object {
-  "context": Object {},
-  "field_createUser": Object {
-    "args": undefined,
-  },
-  "field_createUser_id": Object {
-    "args": undefined,
-  },
-  "field_createUser_simplePosts": Object {
-    "args": undefined,
-  },
-  "field_createUser_simplePosts_id": Object {
-    "args": undefined,
-  },
   "name": "Bob",
-  "parent": undefined,
   "role": "captain",
   "userId": "foobar",
 }
@@ -262,19 +205,11 @@ RETURN query"
 
 exports[`query translation integration tests runs aql expressions 2`] = `
 Object {
-  "context": Object {},
   "field_user": Object {
     "args": Object {
       "id": "foo",
     },
   },
-  "field_user_fullName": Object {
-    "args": undefined,
-  },
-  "field_user_id": Object {
-    "args": undefined,
-  },
-  "parent": undefined,
 }
 `;
 
@@ -298,22 +233,11 @@ RETURN query"
 
 exports[`query translation integration tests runs arbitrary subqueries 2`] = `
 Object {
-  "context": Object {},
   "field_user": Object {
     "args": Object {
       "id": "foo",
     },
   },
-  "field_user_friendsOfFriends": Object {
-    "args": undefined,
-  },
-  "field_user_friendsOfFriends_id": Object {
-    "args": undefined,
-  },
-  "field_user_id": Object {
-    "args": undefined,
-  },
-  "parent": undefined,
 }
 `;
 
@@ -337,22 +261,11 @@ RETURN query"
 
 exports[`query translation integration tests sorts descending 2`] = `
 Object {
-  "context": Object {},
   "field_user": Object {
     "args": Object {
       "id": "foo",
     },
   },
-  "field_user_descendingPosts": Object {
-    "args": undefined,
-  },
-  "field_user_descendingPosts_id": Object {
-    "args": undefined,
-  },
-  "field_user_id": Object {
-    "args": undefined,
-  },
-  "parent": undefined,
 }
 `;
 
@@ -370,16 +283,11 @@ RETURN query"
 
 exports[`query translation integration tests translates a basic document query 2`] = `
 Object {
-  "context": Object {},
   "field_user": Object {
     "args": Object {
       "id": "foo",
     },
   },
-  "field_user_id": Object {
-    "args": undefined,
-  },
-  "parent": undefined,
 }
 `;
 
@@ -403,22 +311,11 @@ RETURN query"
 
 exports[`query translation integration tests translates a document with a nested node 2`] = `
 Object {
-  "context": Object {},
   "field_user": Object {
     "args": Object {
       "id": "foo",
     },
   },
-  "field_user_id": Object {
-    "args": undefined,
-  },
-  "field_user_simplePosts": Object {
-    "args": undefined,
-  },
-  "field_user_simplePosts_id": Object {
-    "args": undefined,
-  },
-  "parent": undefined,
 }
 `;
 
@@ -442,25 +339,11 @@ RETURN query"
 
 exports[`query translation integration tests traverses edges 2`] = `
 Object {
-  "context": Object {},
   "field_user": Object {
     "args": Object {
       "id": "foo",
     },
   },
-  "field_user_friends": Object {
-    "args": undefined,
-  },
-  "field_user_friends_user": Object {
-    "args": undefined,
-  },
-  "field_user_friends_user_id": Object {
-    "args": undefined,
-  },
-  "field_user_id": Object {
-    "args": undefined,
-  },
-  "parent": undefined,
 }
 `;
 
@@ -485,12 +368,5 @@ Object {
   "context": Object {
     "userId": "foo",
   },
-  "field_authorizedPosts": Object {
-    "args": undefined,
-  },
-  "field_authorizedPosts_id": Object {
-    "args": undefined,
-  },
-  "parent": undefined,
 }
 `;
