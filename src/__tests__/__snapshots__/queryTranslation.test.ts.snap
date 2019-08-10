@@ -2,7 +2,7 @@
 
 exports[`query translation integration tests does a Relay-style connection 1`] = `
 "LET query = FIRST(
-  user = DOCUMENT(users, @field_user.args.id)
+  LET user = DOCUMENT(users, @field_user.args.id)
   RETURN {
     id: user._key,
     postsConnection: FIRST(
@@ -65,7 +65,7 @@ Object {
 
 exports[`query translation integration tests filters 1`] = `
 "LET query = FIRST(
-  user = DOCUMENT(users, @field_user.args.id)
+  LET user = DOCUMENT(users, @field_user.args.id)
   RETURN {
     id: user._key,
     filteredPosts: (
@@ -98,7 +98,7 @@ Object {
 
 exports[`query translation integration tests paginates 1`] = `
 "LET query = FIRST(
-  user = DOCUMENT(users, @field_user.args.id)
+  LET user = DOCUMENT(users, @field_user.args.id)
   RETURN {
     id: user._key,
     paginatedPosts: (
@@ -134,7 +134,7 @@ Object {
 
 exports[`query translation integration tests passes traversal options 1`] = `
 "LET query = FIRST(
-  user = DOCUMENT(users, @field_user.args.id)
+  LET user = DOCUMENT(users, @field_user.args.id)
   RETURN {
     name: user.name
     id: user._key,
@@ -194,7 +194,7 @@ Object {
 
 exports[`query translation integration tests runs aql expressions 1`] = `
 "LET query = FIRST(
-  user = DOCUMENT(users, @field_user.args.id)
+  LET user = DOCUMENT(users, @field_user.args.id)
   RETURN {
     id: user._key,
     fullName: CONCAT(user.name, \\" \\", user.surname)
@@ -215,7 +215,7 @@ Object {
 
 exports[`query translation integration tests runs arbitrary subqueries 1`] = `
 "LET query = FIRST(
-  user = DOCUMENT(users, @field_user.args.id)
+  LET user = DOCUMENT(users, @field_user.args.id)
   RETURN {
     name: user.name
     id: user._key,
@@ -243,7 +243,7 @@ Object {
 
 exports[`query translation integration tests sorts descending 1`] = `
 "LET query = FIRST(
-  user = DOCUMENT(users, @field_user.args.id)
+  LET user = DOCUMENT(users, @field_user.args.id)
   RETURN {
     id: user._key,
     descendingPosts: (
@@ -271,7 +271,7 @@ Object {
 
 exports[`query translation integration tests translates a basic document query 1`] = `
 "LET query = FIRST(
-  user = DOCUMENT(users, @field_user.args.id)
+  LET user = DOCUMENT(users, @field_user.args.id)
   RETURN {
     name: user.name,
     bio: user.bio
@@ -293,7 +293,7 @@ Object {
 
 exports[`query translation integration tests translates a document with a nested node 1`] = `
 "LET query = FIRST(
-  user = DOCUMENT(users, @field_user.args.id)
+  LET user = DOCUMENT(users, @field_user.args.id)
   RETURN {
     name: user.name
     id: user._key,
@@ -321,7 +321,7 @@ Object {
 
 exports[`query translation integration tests traverses edges 1`] = `
 "LET query = FIRST(
-  user = DOCUMENT(users, @field_user.args.id)
+  LET user = DOCUMENT(users, @field_user.args.id)
   RETURN {
     name: user.name
     id: user._key,

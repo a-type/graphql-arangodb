@@ -45,7 +45,10 @@ export const aqlDocument: Plugin = {
     // or if we need to treat it as a literal string
     const resolvedKey = key.startsWith('$') ? key : `"${key}"`;
     return buildSubquery(
-      lines([`$field = DOCUMENT(${collection}, ${resolvedKey})`, children()]),
+      lines([
+        `LET $field = DOCUMENT(${collection}, ${resolvedKey})`,
+        children(),
+      ]),
       returnsList
     );
   },
