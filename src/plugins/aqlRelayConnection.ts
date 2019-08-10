@@ -19,7 +19,7 @@ export const aqlRelayConnection: Plugin = {
       lines([
         `LET $field_listPlusOne = ${listPlusOneSubquery}`,
         `LET $field = {`,
-        indent(`edges: SLICE($field_listPlusOne, 0, $args.first)`),
+        indent(`edges: SLICE($field_listPlusOne, 0, $args.first),`),
         indent(`pageInfo: { `),
         indent(
           indent(`hasNextPage: LENGTH($field_listPlusOne) == $args.first + 1`)

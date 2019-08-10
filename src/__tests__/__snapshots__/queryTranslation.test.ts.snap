@@ -15,7 +15,7 @@ exports[`query translation integration tests does a Relay-style connection 1`] =
         RETURN MERGE(user_postsConnection_edge, { cursor: user_postsConnection_node._key, node: user_postsConnection_node })
       )
       LET user_postsConnection = {
-        edges: SLICE(user_postsConnection_listPlusOne, 0, @field_user_postsConnection.args.first)
+        edges: SLICE(user_postsConnection_listPlusOne, 0, @field_user_postsConnection.args.first),
         pageInfo: { 
           hasNextPage: LENGTH(user_postsConnection_listPlusOne) == @field_user_postsConnection.args.first + 1
         }
