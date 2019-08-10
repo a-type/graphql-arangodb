@@ -98,8 +98,8 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
   return buildSubquery(
     lines([
       `FOR $field_node, $field_edge IN ${edgeDirection} $parent ${edgeCollection}`,
-      indent(`OPTIONS {bfs: true}`),
       indent(`PRUNE ${cursorExpression} > $args.after`),
+      indent(`OPTIONS {bfs: true}`),
       `SORT ${cursorExpression}`,
       `LIMIT $args.first + 1`,
       `RETURN MERGE($field_edge, { cursor: ${cursorExpression}, node: $field_node })`,
