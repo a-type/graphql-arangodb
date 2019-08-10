@@ -49,12 +49,7 @@ describe('query translation integration tests', () => {
   ) => {
     mockResults.forEach(mockResult => {
       mockRunQuery.mockResolvedValueOnce({
-        all: () =>
-          Promise.resolve([
-            {
-              query: mockResult,
-            },
-          ]),
+        all: () => Promise.resolve([mockResult]),
       });
     });
 
@@ -85,11 +80,9 @@ describe('query translation integration tests', () => {
     `,
       [
         {
-          user: {
-            id: 'foo',
-            name: 'Foo',
-            bio: 'No thanks',
-          },
+          id: 'foo',
+          name: 'Foo',
+          bio: 'No thanks',
         },
       ]
     );
@@ -115,24 +108,22 @@ describe('query translation integration tests', () => {
       `,
       [
         {
-          user: {
-            id: 'foo',
-            name: 'Foo',
-            simplePosts: [
-              {
-                id: 'a',
-                title: 'Hello world',
-              },
-              {
-                id: 'b',
-                title: 'Hello again world',
-              },
-              {
-                id: 'c',
-                title: 'Come here often, world?',
-              },
-            ],
-          },
+          id: 'foo',
+          name: 'Foo',
+          simplePosts: [
+            {
+              id: 'a',
+              title: 'Hello world',
+            },
+            {
+              id: 'b',
+              title: 'Hello again world',
+            },
+            {
+              id: 'c',
+              title: 'Come here often, world?',
+            },
+          ],
         },
       ]
     );
@@ -157,15 +148,13 @@ describe('query translation integration tests', () => {
       `,
       [
         {
-          user: {
-            id: 'foo',
-            filteredPosts: [
-              {
-                id: 'c',
-                title: 'Come here often, world?',
-              },
-            ],
-          },
+          id: 'foo',
+          filteredPosts: [
+            {
+              id: 'c',
+              title: 'Come here often, world?',
+            },
+          ],
         },
       ]
     );
@@ -190,19 +179,17 @@ describe('query translation integration tests', () => {
       `,
       [
         {
-          user: {
-            id: 'foo',
-            paginatedPosts: [
-              {
-                id: 'b',
-                title: 'Hello again world',
-              },
-              {
-                id: 'c',
-                title: 'Come here often, world?',
-              },
-            ],
-          },
+          id: 'foo',
+          paginatedPosts: [
+            {
+              id: 'b',
+              title: 'Hello again world',
+            },
+            {
+              id: 'c',
+              title: 'Come here often, world?',
+            },
+          ],
         },
       ]
     );
@@ -227,19 +214,17 @@ describe('query translation integration tests', () => {
       `,
       [
         {
-          user: {
-            id: 'foo',
-            descendingPosts: [
-              {
-                id: 'b',
-                title: 'Hello again world',
-              },
-              {
-                id: 'c',
-                title: 'Come here often, world?',
-              },
-            ],
-          },
+          id: 'foo',
+          descendingPosts: [
+            {
+              id: 'b',
+              title: 'Hello again world',
+            },
+            {
+              id: 'c',
+              title: 'Come here often, world?',
+            },
+          ],
         },
       ]
     );
@@ -269,19 +254,17 @@ describe('query translation integration tests', () => {
       `,
       [
         {
-          user: {
-            id: 'foo',
-            name: 'Bar',
-            friends: [
-              {
-                strength: 2,
-                user: {
-                  id: 'bar',
-                  name: 'Jeff',
-                },
+          id: 'foo',
+          name: 'Bar',
+          friends: [
+            {
+              strength: 2,
+              user: {
+                id: 'bar',
+                name: 'Jeff',
               },
-            ],
-          },
+            },
+          ],
         },
       ]
     );
@@ -307,16 +290,14 @@ describe('query translation integration tests', () => {
       `,
       [
         {
-          user: {
-            id: 'foo',
-            name: 'Bar',
-            friendsOfFriends: [
-              {
-                id: 'baz',
-                name: 'Eva',
-              },
-            ],
-          },
+          id: 'foo',
+          name: 'Bar',
+          friendsOfFriends: [
+            {
+              id: 'baz',
+              name: 'Eva',
+            },
+          ],
         },
       ]
     );
@@ -336,18 +317,16 @@ describe('query translation integration tests', () => {
       }
       `,
       [
-        {
-          authorizedPosts: [
-            {
-              id: 'a',
-              title: 'Hello world',
-            },
-            {
-              id: 'b',
-              title: 'Hello again world',
-            },
-          ],
-        },
+        [
+          {
+            id: 'a',
+            title: 'Hello world',
+          },
+          {
+            id: 'b',
+            title: 'Hello again world',
+          },
+        ],
       ],
       {
         userId: 'foo',
@@ -371,10 +350,8 @@ describe('query translation integration tests', () => {
       `,
       [
         {
-          user: {
-            id: 'foo',
-            fullName: 'Foo Bar',
-          },
+          id: 'foo',
+          fullName: 'Foo Bar',
         },
       ]
     );
@@ -407,22 +384,20 @@ describe('query translation integration tests', () => {
     `,
       [
         {
-          user: {
-            id: 'foo',
+          id: 'foo',
 
-            postsConnection: {
-              edges: [
-                {
-                  cursor: 'a',
-                  node: {
-                    id: 'a',
-                    title: 'Hello world',
-                  },
+          postsConnection: {
+            edges: [
+              {
+                cursor: 'a',
+                node: {
+                  id: 'a',
+                  title: 'Hello world',
                 },
-              ],
-              pageInfo: {
-                hasNextPage: true,
               },
+            ],
+            pageInfo: {
+              hasNextPage: true,
             },
           },
         },
@@ -450,24 +425,22 @@ describe('query translation integration tests', () => {
       `,
       [
         {
-          user: {
-            id: 'foo',
-            name: 'Foo',
-            bfsPosts: [
-              {
-                id: 'a',
-                title: 'Hello world',
-              },
-              {
-                id: 'b',
-                title: 'Hello again world',
-              },
-              {
-                id: 'c',
-                title: 'Come here often, world?',
-              },
-            ],
-          },
+          id: 'foo',
+          name: 'Foo',
+          bfsPosts: [
+            {
+              id: 'a',
+              title: 'Hello world',
+            },
+            {
+              id: 'b',
+              title: 'Hello again world',
+            },
+            {
+              id: 'c',
+              title: 'Come here often, world?',
+            },
+          ],
         },
       ]
     );
@@ -493,11 +466,9 @@ describe('query translation integration tests', () => {
       `,
       [
         {
-          createUser: {
-            id: 'foobar',
-            name: 'Bob',
-            simplePosts: [],
-          },
+          id: 'foobar',
+          name: 'Bob',
+          simplePosts: [],
         },
       ]
     );

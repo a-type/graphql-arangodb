@@ -17,5 +17,5 @@ export const executeQuery = async ({
   });
 
   const allResults = await queryResult.all();
-  return allResults[0].query[fieldName];
+  return allResults[0];
 };
