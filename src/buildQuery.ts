@@ -65,21 +65,26 @@ const buildReturnProjection = ({
   return lines([
     `RETURN {`,
     lines(
-      scalarFields.map(name => `${name}: ${fieldName}.${name}`).map(indent),
-      ',\n'
-    ),
-    lines(
-      nonScalarFields
-        .map(name => {
-          const fieldQuery = query.fieldQueries[name];
-          const subQueryString = buildSubQuery({
-            query: fieldQuery,
-            fieldName: joinFieldNames(fieldName, name),
-            parentName: fieldName,
-          });
-          return `${name}: ${subQueryString}`;
-        })
-        .map(indent),
+      [
+        lines(
+          scalarFields.map(name => `${name}: ${fieldName}.${name}`).map(indent),
+          ',\n'
+        ),
+        lines(
+          nonScalarFields
+            .map(name => {
+              const fieldQuery = query.fieldQueries[name];
+              const subQueryString = buildSubQuery({
+                query: fieldQuery,
+                fieldName: joinFieldNames(fieldName, name),
+                parentName: fieldName,
+              });
+              return `${name}: ${subQueryString}`;
+            })
+            .map(indent),
+          ',\n'
+        ),
+      ],
       ',\n'
     ),
     `}`,

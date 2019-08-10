@@ -24,11 +24,11 @@ exports[`query translation integration tests does a Relay-style connection 1`] =
         edges: (
           FOR user_postsConnection_edges IN user_postsConnection.edges
           RETURN {
-            cursor: user_postsConnection_edges.cursor
+            cursor: user_postsConnection_edges.cursor,
             node: FIRST(
               LET user_postsConnection_edges_node = user_postsConnection_edges.node
               RETURN {
-                title: user_postsConnection_edges_node.title
+                title: user_postsConnection_edges_node.title,
                 id: user_postsConnection_edges_node._key
               }
             )
@@ -72,7 +72,7 @@ exports[`query translation integration tests filters 1`] = `
       FOR user_filteredPosts IN OUTBOUND user posted
         FILTER user_filteredPosts.title =~ @field_user_filteredPosts.args.titleMatch
       RETURN {
-        title: user_filteredPosts.title
+        title: user_filteredPosts.title,
         id: user_filteredPosts._key
       }
     )
@@ -106,7 +106,7 @@ exports[`query translation integration tests paginates 1`] = `
         SORT user_paginatedPosts[@field_user_paginatedPosts.args.sort] ASC
         LIMIT @field_user_paginatedPosts.args.skip @field_user_paginatedPosts.args.count
       RETURN {
-        title: user_paginatedPosts.title
+        title: user_paginatedPosts.title,
         id: user_paginatedPosts._key
       }
     )
@@ -136,13 +136,13 @@ exports[`query translation integration tests passes traversal options 1`] = `
 "LET query = FIRST(
   LET user = DOCUMENT(users, @field_user.args.id)
   RETURN {
-    name: user.name
+    name: user.name,
     id: user._key,
     bfsPosts: (
       FOR user_bfsPosts IN OUTBOUND user posted
         OPTIONS { bfs: true }
       RETURN {
-        title: user_bfsPosts.title
+        title: user_bfsPosts.title,
         id: user_bfsPosts._key
       }
     )
@@ -170,12 +170,12 @@ exports[`query translation integration tests resolves a custom query inside the 
                 
   )
   RETURN {
-    name: createUser.name
+    name: createUser.name,
     id: createUser._key,
     simplePosts: (
       FOR createUser_simplePosts IN OUTBOUND createUser posted
       RETURN {
-        title: createUser_simplePosts.title
+        title: createUser_simplePosts.title,
         id: createUser_simplePosts._key
       }
     )
@@ -217,12 +217,12 @@ exports[`query translation integration tests runs arbitrary subqueries 1`] = `
 "LET query = FIRST(
   LET user = DOCUMENT(users, @field_user.args.id)
   RETURN {
-    name: user.name
+    name: user.name,
     id: user._key,
     friendsOfFriends: (
       FOR user_friendsOfFriends IN 2..2 ANY user friendOf OPTIONS {bfs: true, uniqueVertices: 'path'}
       RETURN {
-        name: user_friendsOfFriends.name
+        name: user_friendsOfFriends.name,
         id: user_friendsOfFriends._key
       }
     )
@@ -250,7 +250,7 @@ exports[`query translation integration tests sorts descending 1`] = `
       FOR user_descendingPosts IN OUTBOUND user posted
         SORT user_descendingPosts[\\"title\\"] DESC
       RETURN {
-        title: user_descendingPosts.title
+        title: user_descendingPosts.title,
         id: user_descendingPosts._key
       }
     )
@@ -274,7 +274,7 @@ exports[`query translation integration tests translates a basic document query 1
   LET user = DOCUMENT(users, @field_user.args.id)
   RETURN {
     name: user.name,
-    bio: user.bio
+    bio: user.bio,
     id: user._key
   }
 )
@@ -295,12 +295,12 @@ exports[`query translation integration tests translates a document with a nested
 "LET query = FIRST(
   LET user = DOCUMENT(users, @field_user.args.id)
   RETURN {
-    name: user.name
+    name: user.name,
     id: user._key,
     simplePosts: (
       FOR user_simplePosts IN OUTBOUND user posted
       RETURN {
-        title: user_simplePosts.title
+        title: user_simplePosts.title,
         id: user_simplePosts._key
       }
     )
@@ -323,12 +323,12 @@ exports[`query translation integration tests traverses edges 1`] = `
 "LET query = FIRST(
   LET user = DOCUMENT(users, @field_user.args.id)
   RETURN {
-    name: user.name
+    name: user.name,
     id: user._key,
     friends: (
       FOR user_friends_node, user_friends IN ANY user friendOf
       RETURN {
-        strength: user_friends.strength
+        strength: user_friends.strength,
         user: user_friends_node
       }
     )
@@ -356,7 +356,7 @@ exports[`query translation integration tests uses context values 1`] = `
   )
   FOR authorizedPosts IN allAuthorizedPosts
   RETURN {
-    title: authorizedPosts.title
+    title: authorizedPosts.title,
     id: authorizedPosts._key
   }
 )
