@@ -99,7 +99,8 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
     lines([
       `FOR $field_node, $field_edge IN ${edgeDirection} $parent ${edgeCollection}`,
       indent(`OPTIONS {bfs: true}`),
-      `FILTER !$args.after || ${cursorExpression} > $args.after`,
+      // filter out 'detached' edges which don't point to a node anymore
+      `FILTER $field_node && (!$args.after || ${cursorExpression} > $args.after)`,
       `SORT ${cursorExpression}`,
       `LIMIT $args.first + 1`,
       `RETURN MERGE($field_edge, { cursor: ${cursorExpression}, node: $field_node })`,
