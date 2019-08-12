@@ -55,7 +55,7 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
     return buildSubquery(
       lines([
         `FOR $field_node IN ${documentCollection}`,
-        `FILTER $field_node.${cursorProperty} > $args.after`,
+        `FILTER !$args.after || $field_node.${cursorProperty} > $args.after`,
         `SORT $field_node.${cursorProperty}`,
         `LIMIT $args.first + 1`,
         `RETURN { cursor: $field_node.${cursorProperty}, node: $field_node }`,
@@ -82,7 +82,7 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
         `FOR $field_node IN FULLTEXT(${documentCollection}, ${JSON.stringify(
           fullTextProperty
         )}, ${fullTextTerm})`,
-        `FILTER $field_node.${cursorProperty} > $args.after`,
+        `FILTER !$args.after || $field_node.${cursorProperty} > $args.after`,
         `SORT $field_node.${cursorProperty}`,
         `LIMIT $args.first + 1`,
         `RETURN { cursor: $field_node.${cursorProperty}, node: $field_node }`,
@@ -98,7 +98,7 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
   return buildSubquery(
     lines([
       `FOR $field_node, $field_edge IN ${edgeDirection} $parent ${edgeCollection}`,
-      indent(`PRUNE ${cursorExpression} > $args.after`),
+      indent(`PRUNE !$args.after || ${cursorExpression} > $args.after`),
       indent(`OPTIONS {bfs: true}`),
       `SORT ${cursorExpression}`,
       `LIMIT $args.first + 1`,
