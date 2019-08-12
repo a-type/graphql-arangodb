@@ -98,7 +98,7 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
   return buildSubquery(
     lines([
       `FOR $field_node, $field_edge IN ${edgeDirection} $parent ${edgeCollection}`,
-      indent(`PRUNE !$args.after || ${cursorExpression} > $args.after`),
+      indent(`FILTER !$args.after || ${cursorExpression} > $args.after`),
       indent(`OPTIONS {bfs: true}`),
       `SORT ${cursorExpression}`,
       `LIMIT $args.first + 1`,
