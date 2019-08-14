@@ -92,11 +92,10 @@ directive @aqlRelayConnection(
   edgeCollection: String
   edgeDirection: AqlEdgeDirection
   documentCollection: String
-  cursorProperty: String!
+  cursorExpression: String
   source: AqlRelayConnectionSource = Default
   fullTextTerm: String
   fullTextProperty: String
-  cursorOnEdge: Boolean = false
 ) on FIELD_DEFINITION | OBJECT
 
 directive @aqlRelayEdges on FIELD_DEFINITION | OBJECT

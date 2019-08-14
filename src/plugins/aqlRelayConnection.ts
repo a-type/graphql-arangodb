@@ -35,42 +35,34 @@ export const aqlRelayConnection: Plugin = {
 
 const createListPlusOneSubquery = (directiveArgs: any) => {
   const {
-    cursorProperty,
+    cursorExpression: userCursorExpression,
     edgeDirection,
     edgeCollection,
     documentCollection,
     source,
     fullTextTerm,
     fullTextProperty,
-    cursorOnEdge,
   } = directiveArgs;
 
-  if (source === 'default' && documentCollection) {
-    if (cursorOnEdge) {
-      throw new Error(
-        `Cannot use cursorOnEdge when Relay connection represents a basic document collection`
-      );
-    }
+  const cursorExpression =
+    (userCursorExpression &&
+      interpolateUserCursorExpression(userCursorExpression)) ||
+    '$field_node._key';
 
+  if (source === 'default' && documentCollection) {
     return buildSubquery(
       lines([
         `FOR $field_node IN ${documentCollection}`,
-        `FILTER !$args.after || $field_node.${cursorProperty} > $args.after`,
-        `SORT $field_node.${cursorProperty}`,
+        `FILTER !$args.after || ${cursorExpression} > $args.after`,
+        `SORT ${cursorExpression}`,
         `LIMIT $args.first + 1`,
-        `RETURN { cursor: $field_node.${cursorProperty}, node: $field_node }`,
+        `RETURN { cursor: ${cursorExpression}, node: $field_node }`,
       ]),
       true
     );
   }
 
   if (source === 'FullText') {
-    if (cursorOnEdge) {
-      throw new Error(
-        `Cannot use cursorOnEdge when Relay connection is using FullText source`
-      );
-    }
-
     if (!fullTextTerm || !fullTextProperty || !documentCollection) {
       throw new Error(
         'fullTextTerm, fullTextProperty, and documentCollection are both required for a fulltext Relay connection directive'
@@ -82,18 +74,14 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
         `FOR $field_node IN FULLTEXT(${documentCollection}, ${JSON.stringify(
           fullTextProperty
         )}, ${fullTextTerm})`,
-        `FILTER !$args.after || $field_node.${cursorProperty} > $args.after`,
-        `SORT $field_node.${cursorProperty}`,
+        `FILTER !$args.after || ${cursorExpression} > $args.after`,
+        `SORT ${cursorExpression}`,
         `LIMIT $args.first + 1`,
-        `RETURN { cursor: $field_node.${cursorProperty}, node: $field_node }`,
+        `RETURN { cursor: ${cursorExpression}, node: $field_node }`,
       ]),
       true
     );
   }
-
-  const cursorExpression = cursorOnEdge
-    ? `$field_edge.${cursorProperty}`
-    : `$field_node.${cursorProperty}`;
 
   return buildSubquery(
     lines([
@@ -108,3 +96,10 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
     true
   );
 };
+
+// converts user-land "$node" and "$edge" into field-qualified interpolations used in the rest
+// of this plugin
+const interpolateUserCursorExpression = (cursorExpression: string) =>
+  cursorExpression
+    .replace(`$node`, `$field_node`)
+    .replace(`$edge`, `$field_edge`);

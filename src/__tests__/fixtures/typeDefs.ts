@@ -69,7 +69,7 @@ export default `
       )
 
     postsConnection(first: Int = 10, after: String!): UserPostsConnection!
-      @aqlRelayConnection(edgeCollection: "posted", edgeDirection: OUTBOUND, cursorProperty: "_key")
+      @aqlRelayConnection(edgeCollection: "posted", edgeDirection: OUTBOUND, cursorExpression: "$node.title")
   }
 
   type Post {

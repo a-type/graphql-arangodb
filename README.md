@@ -398,7 +398,7 @@ type User {
     @aqlRelayConnection(
       edgeCollection: "posted"
       edgeDirection: OUTBOUND
-      cursorProperty: "_key"
+      cursorExpression: "$node.title"
     )
 }
 
@@ -435,8 +435,7 @@ Add this directive to a field _or_ type definition to indicate that it should be
 
 - `edgeCollection: String!`: The name of the collection of edges to traverse
 - `edgeDirection: AqlEdgeDirection!`: The direction to traverse edges. Can be `ANY`.
-- `cursorProperty: String!`: The property on each node to use as the cursor.
-- `cursorOnEdge: Boolean`: If true, the connection will index the cursor property from the edge document, not the node document.
+- `cursorExpression: String`: An expression used to compute a cursor from a node or edge. Using `$node` will refer to the node, `$edge` refers to the edge. If omitted, entries will be sorted by `_key`.
 - `source: AqlRelayConnectionSource`: Supply `FullText` and the connection will draw from a full text index instead of a document collection.
 
 #### `@aqlRelayEdges`
