@@ -11,7 +11,8 @@
     "start": "tsdx watch",
     "build": "tsdx build",
     "test": "jest --watch",
-    "test:integration": "jest -c=./jest.integration.config.js --forceExit --runInBand"
+    "test:integration": "jest -c=./jest.integration.config.js --forceExit --runInBand",
+    "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
     "arangojs": "^6.10.0",

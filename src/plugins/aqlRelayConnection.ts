@@ -101,5 +101,5 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
 // of this plugin
 const interpolateUserCursorExpression = (cursorExpression: string) =>
   cursorExpression
-    .replace(`$node`, `$field_node`)
-    .replace(`$edge`, `$field_edge`);
+    .replace(/\$node/g, `$field_node`)
+    .replace(/\$edge/g, `$field_edge`);
