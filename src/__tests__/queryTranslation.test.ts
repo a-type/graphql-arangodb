@@ -23,7 +23,7 @@ describe('query translation integration tests', () => {
 
           return aqlResolver.runCustomQuery({
             queryString: `
-              INSERT {_key: @userId, role: @captain, name: @name} INTO users
+              INSERT {_key: @userId, role: @role, name: @name} INTO users
               RETURN NEW
             `,
             bindVars,
@@ -32,6 +32,10 @@ describe('query translation integration tests', () => {
             info,
           });
         },
+        createPost: aqlResolver,
+      },
+      CreatePostPayload: {
+        post: aqlResolver,
       },
     },
   });
@@ -65,6 +69,8 @@ describe('query translation integration tests', () => {
     if (result.errors) {
       throw result.errors[0];
     }
+
+    return result.data;
   };
 
   test('translates a basic document query', async () => {
@@ -475,5 +481,53 @@ describe('query translation integration tests', () => {
 
     expect(mockRunQuery.mock.calls[0][0].query).toMatchSnapshot();
     expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchSnapshot();
+  });
+
+  test('resolves multi-query operations to avoid read-after-write errors', async () => {
+    const result = await run(
+      `
+      mutation CreatePost {
+        createPost {
+          post {
+            id
+            title
+            author {
+              id
+            }
+          }
+        }
+      }
+      `,
+      [
+        {
+          postId: '3',
+        },
+        {
+          id: '3',
+          title: 'Fake post',
+          author: {
+            id: 'foo',
+          },
+        },
+      ]
+    );
+
+    expect(result).toEqual({
+      createPost: {
+        post: {
+          id: '3',
+          title: 'Fake post',
+          author: {
+            id: 'foo',
+          },
+        },
+      },
+    });
+
+    expect(mockRunQuery).toHaveBeenCalledTimes(2);
+    expect(mockRunQuery.mock.calls[0][0].query).toMatchSnapshot();
+    expect(mockRunQuery.mock.calls[0][0].bindVars).toMatchSnapshot();
+    expect(mockRunQuery.mock.calls[1][0].query).toMatchSnapshot();
+    expect(mockRunQuery.mock.calls[1][0].bindVars).toMatchSnapshot();
   });
 });

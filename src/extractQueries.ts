@@ -75,6 +75,15 @@ export const extractQueriesFromField = ({
   }
 
   const directives = getFieldDirectives(parentType, fieldName);
+
+  // abort this path if there is an @aqlNewQuery directive and this is not the root field
+  if (
+    parentQuery &&
+    directives.some(({ name }) => name.value === 'aqlNewQuery')
+  ) {
+    return null;
+  }
+
   const pluginInstances = directives
     .map(directive => {
       const matchingPlugin = plugins[directive.name.value];

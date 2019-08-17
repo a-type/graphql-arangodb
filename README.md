@@ -588,6 +588,72 @@ You could also use the same trick to do some logic after.
 
 If you want to modify the arguments before passing them on, or do even more advanced logic, see [the section on `runCustomQuery`](#running-custom-queries-experimental) above.
 
+### Splitting Up Queries (Experimental)
+
+There are notable use cases where you may want to specifically split the overall GraphQL operation into multiple AQL queries. For instance, if you do a write mutation, ArangoDB will not allow you to read from that collection again in the same query. However, it's possible (depending on what you return from your mutation) for the user to create a selection set which re-traverses collections which were affected by the original write. In such a case, you may want to split the initial write AQL query from the subsequent read queries in the remainder of the operation.
+
+You can use the experimental `@aqlNewQuery` directive to do this. Simply add it to any field, and that field will start a brand new AQL query, as if it had been a root field.
+
+**Important:** you must attach the library resolver to any field you annotate with `@aqlNewQuery`, so that it can process that field and any sub-selections into the new AQL query.
+
+**Important:** if you are using this directive to accomplish a read-after-write scenario, you should add the `waitForSync` option to your write queries to ensure the data is consistent before the second query is run.
+
+**Example:**
+
+```graphql
+type Post {
+  id: ID! @aqlKey
+  title: String!
+  body: String!
+  publishedAt: String!
+  author: User! @aqlNode(edgeCollection: "posted", direction: INBOUND)
+}
+
+type CreatePostPayload {
+  post: Post!
+    @aqlNewQuery
+    @aqlSubquery(
+      query: """
+      LET $field = DOCUMENT(posts, $parent._key)
+      """
+    )
+}
+
+type Mutation {
+  createPost: CreatePostPayload!
+    @aqlSubquery(
+      query: """
+      INSERT { title: "Fake post", body: "foo", publishedAt: "2019-05-03" }
+      INTO posts
+      OPTIONS { waitForSync: true }
+      LET $field = {
+        post: NEW
+      }
+      """
+    )
+}
+```
+
+The example above allows a user to make a query like this:
+
+```graphql
+mutation CreatePost {
+  createPost {
+    post {
+      id
+      title
+      author {
+        id
+      }
+    }
+  }
+}
+```
+
+without triggering an "access after data-modification by traversal" error from AQL.
+
+Splitting up queries may also be useful for tuning performance and balancing the overall size of queries.
+
 ---
 
 ## Development

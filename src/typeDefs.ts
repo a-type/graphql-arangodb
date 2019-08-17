@@ -104,4 +104,6 @@ directive @aqlRelayEdges on FIELD_DEFINITION | OBJECT
 directive @aqlRelayPageInfo on FIELD_DEFINITION | OBJECT
 
 directive @aqlRelayNode on FIELD_DEFINITION | OBJECT
+
+directive @aqlNewQuery on FIELD_DEFINITION
 `;

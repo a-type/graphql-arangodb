@@ -174,7 +174,7 @@ exports[`query translation integration tests resolves a custom query inside the 
 "LET query = FIRST(
   LET createUser = FIRST(
     
-                  INSERT {_key: @userId, role: @captain, name: @name} INTO users
+                  INSERT {_key: @userId, role: @role, name: @name} INTO users
                   RETURN NEW
                 
   )
@@ -198,6 +198,49 @@ Object {
   "name": "Bob",
   "role": "captain",
   "userId": "foobar",
+}
+`;
+
+exports[`query translation integration tests resolves multi-query operations to avoid read-after-write errors 1`] = `
+"LET query = FIRST(
+  INSERT { title: \\"Fake post\\", body: \\"foo\\", publishedAt: \\"2019-05-03\\" }
+  INTO posts
+  OPTIONS { waitForSync: true }
+  LET createPost = {
+    post: NEW
+  }
+  RETURN {
+    post: createPost.post
+  }
+)
+RETURN query"
+`;
+
+exports[`query translation integration tests resolves multi-query operations to avoid read-after-write errors 2`] = `Object {}`;
+
+exports[`query translation integration tests resolves multi-query operations to avoid read-after-write errors 3`] = `
+"LET query = FIRST(
+  LET post = DOCUMENT(posts, @parent._key)
+  RETURN {
+    title: post.title,
+    id: post._key,
+    author: FIRST(
+      FOR post_author IN INBOUND post posted
+        LIMIT 1
+      RETURN {
+        id: post_author._key
+      }
+    )
+  }
+)
+RETURN query"
+`;
+
+exports[`query translation integration tests resolves multi-query operations to avoid read-after-write errors 4`] = `
+Object {
+  "parent": Object {
+    "postId": "3",
+  },
 }
 `;
 

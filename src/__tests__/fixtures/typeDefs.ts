@@ -95,6 +95,8 @@ export default `
     title: String!
     body: String!
     publishedAt: String!
+    author: User!
+      @aqlNode(edgeCollection: "posted", direction: INBOUND)
   }
 
   type FriendOfEdge {
@@ -141,8 +143,31 @@ export default `
       )
   }
 
+  type CreatePostPayload {
+    post: Post!
+      @aqlNewQuery
+      @aqlSubquery(
+        query: """
+        LET $field = DOCUMENT(posts, $parent._key)
+        """
+      )
+  }
+
   type Mutation {
     """This tests custom resolver query support"""
     createUser: User!
+
+    """Tests multi-query resolution to avoid 'read after write' errors"""
+    createPost: CreatePostPayload!
+      @aqlSubquery(
+        query: """
+        INSERT { title: "Fake post", body: "foo", publishedAt: "2019-05-03" }
+        INTO posts
+        OPTIONS { waitForSync: true }
+        LET $field = {
+          post: NEW
+        }
+        """
+      )
   }
 `;
