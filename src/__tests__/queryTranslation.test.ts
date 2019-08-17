@@ -367,7 +367,7 @@ describe('query translation integration tests', () => {
         user(id: "foo") {
           id
 
-          postsConnection(after: "opaqueCursor") {
+          postsConnection(after: "opaqueCursor", filter: { publishedAfter: "2019-17-08 04:27:54 AM" }) {
             edges {
               cursor
               node {
@@ -397,7 +397,7 @@ describe('query translation integration tests', () => {
               },
             ],
             pageInfo: {
-              hasNextPage: true,
+              hasNextPage: false,
             },
           },
         },

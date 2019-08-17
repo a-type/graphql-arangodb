@@ -390,11 +390,11 @@ To support Relay use cases easily, there are also Relay-specific directives avai
 
 You must use all of the provided directives to properly construct a Relay connection, according to the rules below. The following example provides a full picture of how to create a Relay Connection:
 
-**Full Relay Example**
+**Basic Relay Example**
 
 ```graphql
 type User {
-  postsConnection(first: Int = 10, after: String!): UserPostsConnection!
+  postsConnection(first: Int = 10, after: String): UserPostsConnection!
     @aqlRelayConnection(
       edgeCollection: "posted"
       edgeDirection: OUTBOUND
@@ -420,8 +420,46 @@ type Post {
   id: ID!
   title: String!
   body: String!
+  publishedAt: String!
 }
 ```
+
+**Relay Example with filtering**
+
+```graphql
+type User {
+  postsConnection(
+    first: Int = 10
+    after: String
+    filter: PostsFilterInput
+  ): UserPostsConnection!
+    @aqlRelayConnection(
+      edgeCollection: "posted"
+      edgeDirection: OUTBOUND
+      cursorExpression: "$node.title"
+      filter: """
+      ($args['filter'] && (
+        $args['filter'].titleLike == null || LIKE($node.title, CONCAT("%", $args['filter'].titleLike, "%"))
+      ) && (
+        $args['filter'].publishedAfter == null || $node.publishedAt > $args['filter'].publishedAfter
+      ))
+      """
+    )
+}
+
+input PostsFilterInput {
+  titleLike: String
+  publishedAfter: String
+}
+```
+
+_About filtering_
+
+- The `filter` parameter must be evaluated as a single boolean expression. Outer parameters should be used to enclose multiple computations.
+- If your filter parameter is optional, you should guard against it being `null` within your filter statement.
+- The word `filter` is interpreted in AQL as a new `FILTER` statement, so if you use that as a parameter name, you must access it via bracket syntax (`['filter']`), not dot syntax (`.filter`)
+- Test that the user has supplied a filterable value before filtering on that value (this is the reason the above example tests that `$args['filter'].titleLike` is not null before asserting that the node title is LIKE that value)
+- You may use `$node` and `$edge` to represent the current node and edge you are filtering against. `$edge` is only valid in a true edge connection from a parent node.
 
 All directives can be applied to either the field which is resolved, or the type it resolves to. Applying the directive to the type might be useful if you reuse the connection in multiple places and don't want to apply the directive to each one. However, doing so may make your schema harder to read.
 
@@ -437,6 +475,7 @@ Add this directive to a field _or_ type definition to indicate that it should be
 - `edgeDirection: AqlEdgeDirection!`: The direction to traverse edges. Can be `ANY`.
 - `cursorExpression: String`: An expression used to compute a cursor from a node or edge. Using `$node` will refer to the node, `$edge` refers to the edge. If omitted, entries will be sorted by `_key`.
 - `source: AqlRelayConnectionSource`: Supply `FullText` and the connection will draw from a full text index instead of a document collection.
+- `filter: String`: Supply a filter statement to further reduce the edges which will be matched in the connection. `$node` and `$edge` may be used in addition to all standard interpolations.
 
 #### `@aqlRelayEdges`
 

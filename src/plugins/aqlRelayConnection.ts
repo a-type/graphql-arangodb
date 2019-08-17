@@ -42,6 +42,7 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
     source,
     fullTextTerm,
     fullTextProperty,
+    filter,
   } = directiveArgs;
 
   const cursorExpression =
@@ -49,11 +50,15 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
       interpolateUserCursorExpression(userCursorExpression)) ||
     '$field_node._key';
 
+  const userFilter = filter ? interpolateUserCursorExpression(filter) : 'true';
+
+  const cursorFilter = `(!$args.after || ${cursorExpression} > $args.after)`;
+
   if (source === 'default' && documentCollection) {
     return buildSubquery(
       lines([
         `FOR $field_node IN ${documentCollection}`,
-        `FILTER !$args.after || ${cursorExpression} > $args.after`,
+        `FILTER ${cursorFilter} && ${userFilter}`,
         `SORT ${cursorExpression}`,
         `LIMIT $args.first + 1`,
         `RETURN { cursor: ${cursorExpression}, node: $field_node }`,
@@ -74,7 +79,7 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
         `FOR $field_node IN FULLTEXT(${documentCollection}, ${JSON.stringify(
           fullTextProperty
         )}, ${fullTextTerm})`,
-        `FILTER !$args.after || ${cursorExpression} > $args.after`,
+        `FILTER ${cursorFilter} && ${userFilter}`,
         `SORT ${cursorExpression}`,
         `LIMIT $args.first + 1`,
         `RETURN { cursor: ${cursorExpression}, node: $field_node }`,
@@ -88,7 +93,7 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
       `FOR $field_node, $field_edge IN ${edgeDirection} $parent ${edgeCollection}`,
       indent(`OPTIONS {bfs: true}`),
       // filter out 'detached' edges which don't point to a node anymore
-      `FILTER $field_node && (!$args.after || ${cursorExpression} > $args.after)`,
+      `FILTER $field_node && ${cursorFilter} && ${userFilter}`,
       `SORT ${cursorExpression}`,
       `LIMIT $args.first + 1`,
       `RETURN MERGE($field_edge, { cursor: ${cursorExpression}, node: $field_node })`,

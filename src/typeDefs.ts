@@ -96,6 +96,7 @@ directive @aqlRelayConnection(
   source: AqlRelayConnectionSource = Default
   fullTextTerm: String
   fullTextProperty: String
+  filter: String
 ) on FIELD_DEFINITION | OBJECT
 
 directive @aqlRelayEdges on FIELD_DEFINITION | OBJECT

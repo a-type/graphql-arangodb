@@ -9,7 +9,13 @@ exports[`query translation integration tests does a Relay-style connection 1`] =
       LET user_postsConnection_listPlusOne = (
         FOR user_postsConnection_node, user_postsConnection_edge IN OUTBOUND user posted
           OPTIONS {bfs: true}
-        FILTER user_postsConnection_node && (!@field_user_postsConnection.args.after || user_postsConnection_node.title > @field_user_postsConnection.args.after)
+        FILTER user_postsConnection_node && (!@field_user_postsConnection.args.after || user_postsConnection_node.title > @field_user_postsConnection.args.after) && (
+          @field_user_postsConnection.args.filter != null && (
+            @field_user_postsConnection.args.filter.publishedAfter == null || user_postsConnection_node.publishedAt > @field_user_postsConnection.args.filter.publishedAfter
+          ) && (
+            @field_user_postsConnection.args.filter.titleLike == null || LIKE(user_postsConnection_node.title, CONCAT(\\"%\\", @field_user_postsConnection.args.filter.titleLike, \\"%\\"))
+          )
+        )
         SORT user_postsConnection_node.title
         LIMIT @field_user_postsConnection.args.first + 1
         RETURN MERGE(user_postsConnection_edge, { cursor: user_postsConnection_node.title, node: user_postsConnection_node })
@@ -57,6 +63,9 @@ Object {
   "field_user_postsConnection": Object {
     "args": Object {
       "after": "opaqueCursor",
+      "filter": Object {
+        "publishedAfter": "2019-17-08 04:27:54 AM",
+      },
       "first": 10,
     },
   },

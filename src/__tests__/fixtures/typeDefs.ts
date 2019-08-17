@@ -68,14 +68,33 @@ export default `
         """
       )
 
-    postsConnection(first: Int = 10, after: String!): UserPostsConnection!
-      @aqlRelayConnection(edgeCollection: "posted", edgeDirection: OUTBOUND, cursorExpression: "$node.title")
+    postsConnection(first: Int = 10, after: String!, filterBy: PostsConnectionFilter): UserPostsConnection!
+      @aqlRelayConnection(
+        edgeCollection: "posted"
+        edgeDirection: OUTBOUND
+        cursorExpression: "$node.title"
+        filter: """
+        (
+          $args.filterBy != null && (
+            $args.filterBy.publishedAfter == null || $node.publishedAt > $args.filterBy.publishedAfter
+          ) && (
+            $args.filterBy.titleLike == null || LIKE($node.title, CONCAT("%", $args.filterBy.titleLike, "%"))
+          )
+        )
+        """
+      )
+  }
+
+  input PostsConnectionFilter {
+    publishedAfter: String
+    titleLike: String
   }
 
   type Post {
     id: ID! @aqlKey
     title: String!
     body: String!
+    publishedAt: String!
   }
 
   type FriendOfEdge {
