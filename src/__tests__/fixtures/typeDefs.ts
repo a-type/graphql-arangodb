@@ -68,17 +68,17 @@ export default `
         """
       )
 
-    postsConnection(first: Int = 10, after: String!, filterBy: PostsConnectionFilter): UserPostsConnection!
+    postsConnection(first: Int = 10, after: String!, filter: PostsConnectionFilter): UserPostsConnection!
       @aqlRelayConnection(
         edgeCollection: "posted"
         edgeDirection: OUTBOUND
         cursorExpression: "$node.title"
         filter: """
         (
-          $args.filterBy != null && (
-            $args.filterBy.publishedAfter == null || $node.publishedAt > $args.filterBy.publishedAfter
+          $args['filter'] != null && (
+            $args['filter'].publishedAfter == null || $node.publishedAt > $args['filter'].publishedAfter
           ) && (
-            $args.filterBy.titleLike == null || LIKE($node.title, CONCAT("%", $args.filterBy.titleLike, "%"))
+            $args['filter'].titleLike == null || LIKE($node.title, CONCAT("%", $args['filter'].titleLike, "%"))
           )
         )
         """

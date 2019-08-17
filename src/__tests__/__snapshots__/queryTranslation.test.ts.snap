@@ -10,10 +10,10 @@ exports[`query translation integration tests does a Relay-style connection 1`] =
         FOR user_postsConnection_node, user_postsConnection_edge IN OUTBOUND user posted
           OPTIONS {bfs: true}
         FILTER user_postsConnection_node && (!@field_user_postsConnection.args.after || user_postsConnection_node.title > @field_user_postsConnection.args.after) && (
-          @field_user_postsConnection.args.filter != null && (
-            @field_user_postsConnection.args.filter.publishedAfter == null || user_postsConnection_node.publishedAt > @field_user_postsConnection.args.filter.publishedAfter
+          @field_user_postsConnection.args['filter'] != null && (
+            @field_user_postsConnection.args['filter'].publishedAfter == null || user_postsConnection_node.publishedAt > @field_user_postsConnection.args['filter'].publishedAfter
           ) && (
-            @field_user_postsConnection.args.filter.titleLike == null || LIKE(user_postsConnection_node.title, CONCAT(\\"%\\", @field_user_postsConnection.args.filter.titleLike, \\"%\\"))
+            @field_user_postsConnection.args['filter'].titleLike == null || LIKE(user_postsConnection_node.title, CONCAT(\\"%\\", @field_user_postsConnection.args['filter'].titleLike, \\"%\\"))
           )
         )
         SORT user_postsConnection_node.title

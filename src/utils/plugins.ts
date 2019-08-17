@@ -3,24 +3,41 @@ import { FIELD_PARAM_PREFIX } from '../constants';
 export const createFieldArgGetter = (fieldName: string) => (
   argPath: string
 ) => {
-  return argPath.replace('$args.', `@${FIELD_PARAM_PREFIX}${fieldName}.args.`);
+  return argPath.replace(/\$args/g, `@${FIELD_PARAM_PREFIX}${fieldName}.args`);
 };
 
 /**
- * Creates a function which replaces all "$arg.foo.bar" with the real
- * argument string
+ * Creates a function which replaces all
+ * "$args"
+ * "$args.foo.bar" or
+ * "$args['foo'].bar" or
+ * "$args["foo"].bar" or
+ * "$args[$args.foo].bar"
+ * with the real argument string
  */
 export const createArgReplacer = (argGetter: (name: string) => any) => (
   str: string
 ) => {
-  const argMatcher = /\$args(\.\w[\w\d]+)*/;
+  const argMatcher = /\$args([\.\[]\w[\w\d]+)*/;
   let result;
   let modifiedStr = '' + str;
 
   while ((result = argMatcher.exec(modifiedStr)) !== null) {
     const text = result[0];
     const index = result.index;
-    modifiedStr = spliceString(modifiedStr, index, text, argGetter(text));
+    const splicedString = spliceString(
+      modifiedStr,
+      index,
+      text,
+      argGetter(text)
+    );
+    if (splicedString === modifiedStr) {
+      // sanity check to avoid infinite looping
+      throw new Error(
+        'Infinite loop detected while interpolating query. This is probably a bug in graphql-arangodb. Please file a bug report with the GraphQL SDL + directives your query is evaluating!'
+      );
+    }
+    modifiedStr = splicedString;
   }
 
   return modifiedStr;
