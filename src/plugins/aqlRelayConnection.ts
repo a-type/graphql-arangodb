@@ -18,11 +18,25 @@ export const aqlRelayConnection: Plugin = {
     return buildSubquery(
       lines([
         `LET $field_listPlusOne = ${listPlusOneSubquery}`,
+        `LET $field_edges = SLICE($field_listPlusOne, 0, $args.first)`,
         `LET $field = {`,
-        indent(`edges: SLICE($field_listPlusOne, 0, $args.first),`),
+        indent(`edges: $field_edges,`),
         indent(`pageInfo: { `),
         indent(
-          indent(`hasNextPage: LENGTH($field_listPlusOne) == $args.first + 1`)
+          lines(
+            [
+              indent(
+                `hasNextPage: LENGTH($field_listPlusOne) == $args.first + 1`
+              ),
+              indent(
+                `startCursor: LENGTH($field_edges) > 0 ? FIRST($field_edges).cursor : null`
+              ),
+              indent(
+                `endCursor: LENGTH($field_edges) > 0 ? LAST($field_edges).cursor : null`
+              ),
+            ],
+            ',\n'
+          )
         ),
         indent('}'),
         `}`,

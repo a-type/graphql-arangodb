@@ -20,10 +20,13 @@ exports[`query translation integration tests does a Relay-style connection 1`] =
         LIMIT @field_user_postsConnection.args.first + 1
         RETURN MERGE(user_postsConnection_edge, { cursor: user_postsConnection_node.title, node: user_postsConnection_node })
       )
+      LET user_postsConnection_edges = SLICE(user_postsConnection_listPlusOne, 0, @field_user_postsConnection.args.first)
       LET user_postsConnection = {
-        edges: SLICE(user_postsConnection_listPlusOne, 0, @field_user_postsConnection.args.first),
+        edges: user_postsConnection_edges,
         pageInfo: { 
-          hasNextPage: LENGTH(user_postsConnection_listPlusOne) == @field_user_postsConnection.args.first + 1
+          hasNextPage: LENGTH(user_postsConnection_listPlusOne) == @field_user_postsConnection.args.first + 1,
+          startCursor: LENGTH(user_postsConnection_edges) > 0 ? FIRST(user_postsConnection_edges).cursor : null,
+          endCursor: LENGTH(user_postsConnection_edges) > 0 ? LAST(user_postsConnection_edges).cursor : null
         }
       }
       RETURN {

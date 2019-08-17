@@ -384,7 +384,9 @@ type User {
 
 ### Relay Directives (Experimental)
 
-To support Relay use cases easily, there are also Relay-specific directives available.
+**Known limitations**
+
+The current Relay directives don't conform entirely to the Relay spec. They only support `first`/`after` paging; no reverse paging. `pageInfo` does not include `hasPreviousPage`. They work for basic, forward-looking pagination use cases, but have not been tested with the official Relay client library.
 
 > The usage of these directives may change a bit over time, so be sure to check when upgrading the library!
 
