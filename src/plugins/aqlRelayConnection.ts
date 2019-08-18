@@ -18,9 +18,9 @@ export const aqlRelayConnection: Plugin = {
     return buildSubquery(
       lines([
         `LET $field_listPlusOne = ${listPlusOneSubquery}`,
-        `LET $field_edges = SLICE($field_listPlusOne, 0, $args.first)`,
+        `LET $field_pruned_edges = SLICE($field_listPlusOne, 0, $args.first)`,
         `LET $field = {`,
-        indent(`edges: $field_edges,`),
+        indent(`edges: $field_pruned_edges,`),
         indent(`pageInfo: { `),
         indent(
           lines(
@@ -29,10 +29,10 @@ export const aqlRelayConnection: Plugin = {
                 `hasNextPage: LENGTH($field_listPlusOne) == $args.first + 1`
               ),
               indent(
-                `startCursor: LENGTH($field_edges) > 0 ? FIRST($field_edges).cursor : null`
+                `startCursor: LENGTH($field_pruned_edges) > 0 ? FIRST($field_pruned_edges).cursor : null`
               ),
               indent(
-                `endCursor: LENGTH($field_edges) > 0 ? LAST($field_edges).cursor : null`
+                `endCursor: LENGTH($field_pruned_edges) > 0 ? LAST($field_pruned_edges).cursor : null`
               ),
             ],
             ',\n'
