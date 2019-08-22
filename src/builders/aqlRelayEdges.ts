@@ -1,12 +1,12 @@
-import { Plugin } from '../types';
+import { Builder } from '../types';
 import { lines } from '../utils/strings';
 import { buildSubquery } from '../utils/aql';
 
-export const aqlRelayPageInfo: Plugin = {
-  name: 'aqlRelayPageInfo',
+export const aqlRelayEdges: Builder = {
+  name: 'aqlRelayEdges',
   build: ({ returnsList, children }) =>
     buildSubquery(
-      lines([`LET $field = $parent.pageInfo`, children()]),
+      lines([`FOR $field IN $parent.edges`, children()]),
       returnsList
     ),
 };

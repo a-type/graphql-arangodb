@@ -1,8 +1,8 @@
-import { Plugin } from '../types';
+import { Builder } from '../types';
 import { lines } from '../utils/strings';
 import { buildSubquery } from '../utils/aql';
 
-export const aqlSubquery: Plugin = {
+export const aqlSubquery: Builder = {
   name: 'aqlSubquery',
   build: ({ directiveArgs, returnsList, children }) => {
     const { query, return: ret } = directiveArgs;

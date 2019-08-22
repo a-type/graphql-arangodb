@@ -1,8 +1,8 @@
-import { Plugin } from '../types';
+import { Builder } from '../types';
 import { lines, indent } from '../utils/strings';
 import { buildQueryModifiers, buildSubquery, buildOptions } from '../utils/aql';
 
-export const aqlNode: Plugin = {
+export const aqlNode: Builder = {
   name: 'aqlNode',
   build: ({ directiveArgs, returnsList, children }) => {
     const { direction, edgeCollection, options } = directiveArgs;

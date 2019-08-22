@@ -1,8 +1,8 @@
-import { Plugin } from '../types';
+import { Builder } from '../types';
 import { lines, indent } from '../utils/strings';
 import { buildSubquery } from '../utils/aql';
 
-export const aqlRelayConnection: Plugin = {
+export const aqlRelayConnection: Builder = {
   name: 'aqlRelayConnection',
   build: ({ directiveArgs, returnsList, children }) => {
     const { edgeCollection, documentCollection } = directiveArgs;

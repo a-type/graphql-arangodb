@@ -1,6 +1,6 @@
-import { Plugin } from '../types';
+import { Builder } from '../types';
 
-export const aql: Plugin = {
+export const aql: Builder = {
   name: 'aql',
   build: ({ directiveArgs }) => {
     return directiveArgs.expression;

@@ -23,28 +23,25 @@ export const buildSubQuery = ({
   fieldName,
   parentName,
 }: QueryBuilderArgs): string => {
-  const statements = query.plugins.map(({ directiveArgs, plugin }) => {
-    const fieldArgs = query.params.args || {};
-    const interpolate = createAllReplacer({
-      fieldName,
-      parentName,
-    });
-
-    const children = () => buildReturnProjection({ query, fieldName });
-
-    return interpolate(
-      plugin.build({
-        fieldName,
-        parentName,
-        fieldArgs,
-        directiveArgs,
-        returnsList: query.returnsList,
-        children,
-      })
-    );
+  const { directiveArgs, builder } = query.builder;
+  const fieldArgs = query.params.args || {};
+  const interpolate = createAllReplacer({
+    fieldName,
+    parentName,
   });
 
-  return lines(statements);
+  const children = () => buildReturnProjection({ query, fieldName });
+
+  return interpolate(
+    builder.build({
+      fieldName,
+      parentName,
+      fieldArgs,
+      directiveArgs,
+      returnsList: query.returnsList,
+      children,
+    })
+  );
 };
 
 const buildReturnProjection = ({

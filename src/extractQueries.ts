@@ -4,7 +4,7 @@ import {
   FieldNode,
   SelectionSetNode,
 } from 'graphql';
-import { DBQuery, PluginInstance, Plugin, DBQueryParams } from './types';
+import { DBQuery, BuilderInstance, Builder, DBQueryParams } from './types';
 import { IGNORED_FIELD_NAMES } from './constants';
 import { getFieldDef } from 'graphql/execution/execute';
 import { getFieldDirectives, getDirectiveArgs } from './utils/directives';
@@ -16,24 +16,24 @@ import {
 } from './utils/graphql';
 import { pathOr } from 'ramda';
 import { getFieldPath } from './utils/graphql';
-import defaultPlugins from './plugins';
+import defaultPlugins from './builders';
 
 type CommonExtractionParams = {
   info: GraphQLResolveInfo;
   parentQuery: DBQuery | undefined;
   parentType: GraphQLObjectType;
   path: string[];
-  plugins: { [directiveName: string]: Plugin };
+  builders: { [directiveName: string]: Builder };
   argumentResolvers: { [path: string]: any };
 };
 
 export const extractQueriesFromResolveInfo = ({
   info,
-  plugins = defaultPlugins,
+  builders = defaultPlugins,
   argumentResolvers = {},
 }: {
   info: GraphQLResolveInfo;
-  plugins?: { [directiveName: string]: Plugin };
+  builders?: { [directiveName: string]: Builder };
   argumentResolvers?: { [path: string]: any };
 }) =>
   extractQueriesFromField({
@@ -42,7 +42,7 @@ export const extractQueriesFromResolveInfo = ({
     parentType: info.parentType,
     field: info.fieldNodes[0],
     path: getFieldPath(info),
-    plugins,
+    builders: builders,
     argumentResolvers,
   });
 
@@ -52,7 +52,7 @@ export const extractQueriesFromField = ({
   parentType,
   field,
   path,
-  plugins,
+  builders: builders,
   argumentResolvers,
 }: CommonExtractionParams & {
   field: FieldNode;
@@ -84,21 +84,20 @@ export const extractQueriesFromField = ({
     return null;
   }
 
-  const pluginInstances = directives
-    .map(directive => {
-      const matchingPlugin = plugins[directive.name.value];
-      if (!matchingPlugin) {
-        return null;
-      }
+  const builderDirective = directives.find(
+    directive => !!builders[directive.name.value]
+  );
 
-      return {
-        plugin: matchingPlugin,
-        directiveArgs: getDirectiveArgs(directive, info.variableValues),
-      } as PluginInstance;
-    })
-    .filter(Boolean) as PluginInstance[];
+  if (!builderDirective) {
+    return null;
+  }
 
-  if (!pluginInstances.length) {
+  const builderInstance = {
+    builder: builders[builderDirective.name.value],
+    directiveArgs: getDirectiveArgs(builderDirective, info.variableValues),
+  } as BuilderInstance;
+
+  if (!builderInstance) {
     return null;
   }
 
@@ -122,7 +121,7 @@ export const extractQueriesFromField = ({
 
   const baseQuery = {
     returnsList: isListOrWrappedListType(schemaFieldDef.type),
-    plugins: pluginInstances,
+    builder: builderInstance,
     paramNames,
     params,
     fieldNames: [],
@@ -145,7 +144,7 @@ export const extractQueriesFromField = ({
     parentType: currentTypeAsObjectType,
     info,
     path,
-    plugins,
+    builders: builders,
     argumentResolvers,
   });
 

@@ -1,6 +1,6 @@
 import { GraphQLResolveInfo } from 'graphql';
-import { LibraryOptions, Plugin } from './types';
-import defaultPlugins from './plugins';
+import { LibraryOptions, Builder } from './types';
+import defaultBuilders from './builders';
 import {
   isListOrWrappedListType,
   extractObjectType,
@@ -24,9 +24,9 @@ export const createCustomQueryRunner = (options: LibraryOptions) => async ({
   context: any;
   parent: any;
 }) => {
-  const { plugins = defaultPlugins, argumentResolvers = {} } = options;
+  const { builders = defaultBuilders, argumentResolvers = {} } = options;
 
-  const customQueryPlugin: Plugin = {
+  const customQueryBuilder: Builder = {
     name: 'customQuery',
     build: ({ children, returnsList }) =>
       buildSubquery(
@@ -40,12 +40,11 @@ export const createCustomQueryRunner = (options: LibraryOptions) => async ({
 
   const query = {
     returnsList: isListOrWrappedListType(info.returnType),
-    plugins: [
-      {
-        plugin: customQueryPlugin,
-        directiveArgs: {},
-      },
-    ],
+    builder: {
+      builder: customQueryBuilder,
+      directiveArgs: {},
+    },
+
     paramNames: [],
     params: {},
     fieldNames: [],
@@ -67,7 +66,7 @@ export const createCustomQueryRunner = (options: LibraryOptions) => async ({
     path: getFieldPath(info),
     parentQuery: query,
     parentType: returnTypeAsObjectType,
-    plugins,
+    builders,
     argumentResolvers,
   });
 

@@ -1,8 +1,8 @@
-import { Plugin } from '../types';
+import { Builder } from '../types';
 import { lines } from '../utils/strings';
 import { buildSubquery } from '../utils/aql';
 
-export const aqlRelayNode: Plugin = {
+export const aqlRelayNode: Builder = {
   name: 'aqlRelayNode',
   build: ({ returnsList, children }) =>
     buildSubquery(

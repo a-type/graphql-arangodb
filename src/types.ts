@@ -11,7 +11,7 @@ export type DBQuery = {
   paramNames: string[];
   params: DBQueryParams;
 
-  plugins: PluginInstance[];
+  builder: BuilderInstance;
 };
 
 export type DBQueryParams = {
@@ -22,7 +22,7 @@ export type QueryFieldMap = {
   [path: string]: DBQuery;
 };
 
-export type Plugin = {
+export type Builder = {
   name: string;
   build: (args: {
     fieldName: string;
@@ -34,13 +34,13 @@ export type Plugin = {
   }) => string;
 };
 
-export type PluginInstance = {
-  plugin: Plugin;
+export type BuilderInstance = {
+  builder: Builder;
   directiveArgs: { [name: string]: any };
 };
 
 export type LibraryOptions = {
-  plugins?: { [name: string]: Plugin };
+  builders?: { [name: string]: Builder };
   argumentResolvers?: { [pathPart: string]: any };
   contextKey?: string;
   db?: Database;

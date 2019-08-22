@@ -1,6 +1,6 @@
-import { Plugin } from '../types';
+import { Builder } from '../types';
 
-export const aqlEdgeNode: Plugin = {
+export const aqlEdgeNode: Builder = {
   name: 'aqlEdgeNode',
   build: ({ parentName }) => {
     // this is assuming we are in the scope of a parent @edge subquery

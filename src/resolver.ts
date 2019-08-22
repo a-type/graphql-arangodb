@@ -1,6 +1,6 @@
 import { GraphQLResolveInfo } from 'graphql';
 import { LibraryOptions, AqlResolver } from './types';
-import defaultPlugins from './plugins';
+import defaultBuilders from './builders';
 import { extractQueriesFromResolveInfo } from './extractQueries';
 import { runQuery } from './runQuery';
 import { createCustomQueryRunner } from './runCustomQuery';
@@ -12,11 +12,11 @@ export const createResolver = (options: LibraryOptions) => {
     context: any,
     info: GraphQLResolveInfo
   ) => {
-    const { plugins = defaultPlugins, argumentResolvers = {} } = options;
+    const { builders = defaultBuilders, argumentResolvers = {} } = options;
 
     const query = extractQueriesFromResolveInfo({
       info,
-      plugins,
+      builders,
       argumentResolvers,
     });
 
