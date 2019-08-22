@@ -1,5 +1,5 @@
 import { GraphQLResolveInfo } from 'graphql';
-import { LibraryOptions, Builder } from './types';
+import { LibraryOptions, Builder, DBQuery } from './types';
 import defaultBuilders from './builders';
 import {
   isListOrWrappedListType,
@@ -38,12 +38,13 @@ export const createCustomQueryRunner = (options: LibraryOptions) => async ({
       ),
   };
 
-  const query = {
+  const query: DBQuery = {
     returnsList: isListOrWrappedListType(info.returnType),
     builder: {
       builder: customQueryBuilder,
       directiveArgs: {},
     },
+    condition: null,
 
     paramNames: [],
     params: {},

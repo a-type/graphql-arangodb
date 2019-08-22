@@ -12,6 +12,12 @@ export type DBQuery = {
   params: DBQueryParams;
 
   builder: BuilderInstance;
+
+  /**
+   * A condition controls whether a sub-query branch is run,
+   * or if null is returned instead
+   */
+  condition: Condition | null;
 };
 
 export type DBQueryParams = {
@@ -37,6 +43,10 @@ export type Builder = {
 export type BuilderInstance = {
   builder: Builder;
   directiveArgs: { [name: string]: any };
+};
+
+export type Condition = {
+  expression: string;
 };
 
 export type LibraryOptions = {

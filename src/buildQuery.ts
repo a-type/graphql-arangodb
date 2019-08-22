@@ -1,6 +1,7 @@
 import { DBQuery } from './types';
 import { createAllReplacer } from './utils/plugins';
 import { lines, indent } from './utils/strings';
+import { buildSubquery as buildSubqueryStatement } from './utils/aql';
 
 type QueryBuilderArgs = {
   query: DBQuery;
@@ -32,7 +33,7 @@ export const buildSubQuery = ({
 
   const children = () => buildReturnProjection({ query, fieldName });
 
-  return interpolate(
+  const subquery = interpolate(
     builder.build({
       fieldName,
       parentName,
@@ -42,6 +43,22 @@ export const buildSubQuery = ({
       children,
     })
   );
+
+  if (query.condition) {
+    return interpolate(
+      buildSubqueryStatement(
+        lines([
+          `LET $field_condition = ${query.condition.expression}`,
+          `RETURN $field_condition`,
+          indent(`? (FILTER $field_condition ${subquery})`),
+          indent(`: (FILTER !$field_condition RETURN null)`),
+        ]),
+        query.returnsList
+      )
+    );
+  } else {
+    return subquery;
+  }
 };
 
 const buildReturnProjection = ({

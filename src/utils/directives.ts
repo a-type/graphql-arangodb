@@ -27,7 +27,7 @@ export const getFieldDirectiveArgs = (
 export const getDirectiveArgs = (
   directive: DirectiveNode | undefined,
   variableValues: { [name: string]: any }
-) => {
+): { [name: string]: any } => {
   if (!directive || !directive.arguments) {
     return {};
   }

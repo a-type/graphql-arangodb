@@ -4,7 +4,13 @@ import {
   FieldNode,
   SelectionSetNode,
 } from 'graphql';
-import { DBQuery, BuilderInstance, Builder, DBQueryParams } from './types';
+import {
+  DBQuery,
+  BuilderInstance,
+  Builder,
+  DBQueryParams,
+  Condition,
+} from './types';
 import { IGNORED_FIELD_NAMES } from './constants';
 import { getFieldDef } from 'graphql/execution/execute';
 import { getFieldDirectives, getDirectiveArgs } from './utils/directives';
@@ -101,6 +107,20 @@ export const extractQueriesFromField = ({
     return null;
   }
 
+  const conditionDirective = directives.find(
+    directive => directive.name.value === 'aqlCondition'
+  );
+  let condition: Condition | null = null;
+  if (conditionDirective) {
+    const conditionDirectiveArgs = getDirectiveArgs(
+      conditionDirective,
+      info.variableValues
+    );
+    condition = {
+      expression: conditionDirectiveArgs.expression,
+    };
+  }
+
   const argValues = getArgumentsPlusDefaults(
     parentType.name,
     field,
@@ -126,6 +146,7 @@ export const extractQueriesFromField = ({
     params,
     fieldNames: [],
     fieldQueries: {},
+    condition,
   };
 
   if (!field.selectionSet) {
@@ -157,16 +178,22 @@ export const extractQueriesFromSelectionSet = ({
   ...rest
 }: CommonExtractionParams & {
   selectionSet: SelectionSetNode;
-}): { [field: string]: DBQuery | null } =>
+}): { [field: string]: DBQuery } =>
   selectionSet.selections.reduce((reducedQueries, selection) => {
     if (selection.kind === 'Field') {
+      const fieldQuery = extractQueriesFromField({
+        field: selection,
+        path: [...path, getNameOrAlias(selection)],
+        ...rest,
+      });
+
+      if (!fieldQuery) {
+        return reducedQueries;
+      }
+
       return {
         ...reducedQueries,
-        [getNameOrAlias(selection)]: extractQueriesFromField({
-          field: selection,
-          path: [...path, getNameOrAlias(selection)],
-          ...rest,
-        }),
+        [getNameOrAlias(selection)]: fieldQuery,
       };
     } else if (selection.kind === 'InlineFragment') {
       return {
