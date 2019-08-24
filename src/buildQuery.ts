@@ -63,6 +63,16 @@ const buildReturnProjection = ({
     `RETURN {`,
     lines(
       [
+        // always include meta information. this allows disconnected queries to use $parent more
+        // seamlessly by referencing $parent._id to traverse relationships, etc
+        lines(
+          [
+            `_id: ${fieldName}._id`,
+            `_key: ${fieldName}._key`,
+            `_rev: ${fieldName}._rev`,
+          ].map(indent),
+          ',\n'
+        ),
         lines(
           scalarFields.map(name => `${name}: ${fieldName}.${name}`).map(indent),
           ',\n'
