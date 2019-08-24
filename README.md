@@ -370,15 +370,19 @@ type User {
 }
 ```
 
-#### `@aqlKey`
+#### `@aqlKey/@aqlId`
 
-Resolves the annotated field with the `_key` of the parent document. You can just attach this to any field which indicates the type's `ID` if you want your GraphQL IDs to be based on the underlying ArangoDB keys.
+Resolve the annotated field with the `_key` or `_id` of the parent document, respectively. You can just attach these to any field which indicates the type's `ID` if you want your GraphQL IDs to be based on the underlying ArangoDB keys or full IDs.
 
 **Example**
 
 ```graphql
 type User {
-  id: @aqlKey
+  id: ID @aqlKey # will be "2301" or similar
+}
+
+type Post {
+  id: ID @aqlId # will be "posts/1234" or similar (depending on your collection name)
 }
 ```
 

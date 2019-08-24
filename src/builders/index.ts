@@ -9,6 +9,7 @@ import { aqlRelayConnection } from './aqlRelayConnection';
 import { aqlRelayEdges } from './aqlRelayEdges';
 import { aqlRelayPageInfo } from './aqlRelayPageInfo';
 import { aqlRelayNode } from './aqlRelayNode';
+import { aqlId } from './aqlId';
 
 export default {
   aqlDocument,
@@ -22,4 +23,5 @@ export default {
   aqlRelayEdges,
   aqlRelayPageInfo,
   aqlRelayNode,
+  aqlId,
 };
