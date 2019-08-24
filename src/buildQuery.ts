@@ -64,7 +64,7 @@ const buildReturnProjection = ({
     lines(
       [
         // always include meta information. this allows disconnected queries to use $parent more
-        // seamlessly by referencing $parent._id to traverse relationships, etc
+        // seamlessly by referencing $parent to traverse relationships, etc
         lines(
           [
             `_id: ${fieldName}._id`,

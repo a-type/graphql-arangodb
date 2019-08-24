@@ -660,6 +660,80 @@ without triggering an "access after data-modification by traversal" error from A
 
 Splitting up queries may also be useful for tuning performance and balancing the overall size of queries.
 
+#### Splitting queries on relationships
+
+One interesting property of AQL is that it will interpret a binding parameter which is shaped like a document as a document. This enables you to seamlessly split up fields which traverse edges using `@aqlNewQuery` without any further modifications, because the node from the previous query will be passed into the new query as a `@parent` bind parameter, and all built-in traversal queries are designed to utilize this. In other words, you can add `@aqlNewQuery` to `@aqlNode`, `@aqlEdge`, and `@aqlRelayConnection` without any further changes, and they will function correctly (while splitting into new queries themselves).
+
+In detail: while a typical `@aqlNode` query, for instance, might look like this when generated (much of this is scaffolding from the library, but pay attention to the simplePosts field subquery):
+
+```
+LET query = FIRST(
+  LET createUser = FIRST(
+    INSERT {_key: @userId, role: @role, name: @name} INTO users
+    RETURN NEW
+  )
+  RETURN {
+    _id: createUser._id,
+    _key: createUser._key,
+    _rev: createUser._rev,
+    name: createUser.name,
+    id: createUser._key,
+    simplePosts: (
+      FOR createUser_simplePosts IN OUTBOUND createUser posted
+      RETURN {
+        _id: createUser_simplePosts._id,
+        _key: createUser_simplePosts._key,
+        _rev: createUser_simplePosts._rev,
+        title: createUser_simplePosts.title,
+        id: createUser_simplePosts._key
+      }
+    )
+  }
+)
+RETURN query
+```
+
+... if you were to add `@aqlNewQuery` to the `simplePosts` field, it would generate two queries:
+
+```
+LET query = FIRST(
+  LET createUser = FIRST(
+    INSERT {_key: @userId, role: @role, name: @name} INTO users
+    RETURN NEW
+  )
+  RETURN {
+    _id: createUser._id,
+    _key: createUser._key,
+    _rev: createUser._rev,
+    name: createUser.name,
+    id: createUser._key,
+  }
+)
+RETURN query
+```
+
+for the rest of the fields, and then:
+
+```
+LET query = FIRST(
+  FOR createUser_simplePosts IN OUTBOUND @parent posted
+    RETURN {
+      _id: createUser_simplePosts._id,
+      _key: createUser_simplePosts._key,
+      _rev: createUser_simplePosts._rev,
+      title: createUser_simplePosts.title,
+      id: createUser_simplePosts._key
+    }
+)
+RETURN query
+```
+
+for the `simplePosts` field.
+
+The `@parent` bind parameter of the second query will be populated with the returned value from the first query, which includes the needed `_id` field (the library ensures this is always present) for AQL to evaluate the `@parent` bind variable as a document reference.
+
+If you want to expriment with this behavior on your own, try running an AQL query in your database and passing an object with a valid `_id` field as a bind parameter, then traversing edges from it.
+
 ---
 
 ## Development
