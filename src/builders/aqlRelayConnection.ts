@@ -5,11 +5,11 @@ import { buildSubquery } from '../utils/aql';
 export const aqlRelayConnection: Builder = {
   name: 'aqlRelayConnection',
   build: ({ directiveArgs, returnsList, children }) => {
-    const { edgeCollection, documentCollection } = directiveArgs;
+    const { edgeCollection, source } = directiveArgs;
 
-    if (!documentCollection && !edgeCollection) {
+    if (!source && !edgeCollection) {
       throw new Error(
-        'Either edgeCollection or documentCollection must be supplied to a Relay collection directive'
+        'Either edgeCollection or a custom source must be supplied to a Relay collection directive'
       );
     }
 
