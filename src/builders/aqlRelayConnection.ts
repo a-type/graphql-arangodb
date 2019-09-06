@@ -54,8 +54,6 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
     edgeCollection,
     documentCollection,
     source,
-    fullTextTerm,
-    fullTextProperty,
     filter,
   } = directiveArgs;
 
@@ -81,18 +79,10 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
     );
   }
 
-  if (source === 'FullText') {
-    if (!fullTextTerm || !fullTextProperty || !documentCollection) {
-      throw new Error(
-        'fullTextTerm, fullTextProperty, and documentCollection are both required for a fulltext Relay connection directive'
-      );
-    }
-
+  if (source) {
     return buildSubquery(
       lines([
-        `FOR $field_node IN FULLTEXT(${documentCollection}, ${JSON.stringify(
-          fullTextProperty
-        )}, ${fullTextTerm})`,
+        interpolateUserCursorExpression(source),
         `FILTER ${cursorFilter} && ${userFilter}`,
         `SORT ${cursorExpression}`,
         `LIMIT $args.first + 1`,
@@ -121,4 +111,5 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
 const interpolateUserCursorExpression = (cursorExpression: string) =>
   cursorExpression
     .replace(/\$node/g, `$field_node`)
-    .replace(/\$edge/g, `$field_edge`);
+    .replace(/\$edge/g, `$field_edge`)
+    .replace(/\$path/g, `$field_path`);

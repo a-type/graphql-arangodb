@@ -477,11 +477,11 @@ Add this directive to a field _or_ type definition to indicate that it should be
 
 **Parameters**
 
-- `edgeCollection: String!`: The name of the collection of edges to traverse
-- `edgeDirection: AqlEdgeDirection!`: The direction to traverse edges. Can be `ANY`.
+- `edgeCollection: String`: The name of the collection of edges to traverse
+- `edgeDirection: AqlEdgeDirection`: The direction to traverse edges. Can be `ANY`.
 - `cursorExpression: String`: An expression used to compute a cursor from a node or edge. Using `$node` will refer to the node, `$edge` refers to the edge. If omitted, entries will be sorted by `_key`.
-- `source: AqlRelayConnectionSource`: Supply `FullText` and the connection will draw from a full text index instead of a document collection.
-- `filter: String`: Supply a filter statement to further reduce the edges which will be matched in the connection. `$node` and `$edge` may be used in addition to all standard interpolations.
+- `filter: String`: Supply a filter statement to further reduce the edges which will be matched in the connection. `$node`, `$edge`, and `$path` may be used in addition to all standard interpolations, and will correspond to the first, second and third positional bindings in a `FOR ... IN` edge traversal statement.
+- `source: String`: (Advanced) Supply your own custom `FOR` expression to source documents from. For example, `FOR $node IN FULLTEXT(Posts, "title", $args.searchTerm)` would create a fulltext search connection. Use `$node` and `$edge` as bindings when traversing documents so that the rest of the query works properly. It's also possible to use subqueries to traverse more advanced collections, like `FOR $node IN (FOR foo IN ...)`. Using a subquery in this way is valid AQL, so you can place any complex traversal logic within it if you wish. Also, if you use `$edge` or `$path` in your `filter` or `cursorExpression` arg, you should be sure to bind them in your `source` arg!
 
 #### `@aqlRelayEdges`
 
