@@ -1,6 +1,6 @@
 {
   "name": "graphql-arangodb",
-  "version": "0.1.21",
+  "version": "0.1.22",
   "main": "dist/index.js",
   "module": "dist/graphql-arangodb.esm.js",
   "typings": "dist/index.d.ts",
