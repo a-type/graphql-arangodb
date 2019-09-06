@@ -52,7 +52,6 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
     cursorExpression: userCursorExpression,
     edgeDirection,
     edgeCollection,
-    documentCollection,
     source,
     filter,
   } = directiveArgs;
@@ -65,19 +64,6 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
   const userFilter = filter ? interpolateUserCursorExpression(filter) : 'true';
 
   const cursorFilter = `(!$args.after || ${cursorExpression} > $args.after)`;
-
-  if (source === 'default' && documentCollection) {
-    return buildSubquery(
-      lines([
-        `FOR $field_node IN ${documentCollection}`,
-        `FILTER ${cursorFilter} && ${userFilter}`,
-        `SORT ${cursorExpression}`,
-        `LIMIT $args.first + 1`,
-        `RETURN { cursor: ${cursorExpression}, node: $field_node }`,
-      ]),
-      true
-    );
-  }
 
   if (source) {
     return buildSubquery(
