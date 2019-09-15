@@ -4,6 +4,6 @@ export * from './runCustomQuery';
 export { createResolver } from './resolver';
 export * from './typeDefs';
 export { resolver };
-export { default as builders } from './builders';
+export { builderCreators as builders } from './builderInstanceCreators';
 
 export default resolver;

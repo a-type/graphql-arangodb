@@ -54,6 +54,7 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
     edgeCollection,
     source,
     filter,
+    sortOrder = 'ASC',
   } = directiveArgs;
 
   const cursorExpression =
@@ -70,7 +71,7 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
       lines([
         interpolateUserCursorExpression(source),
         `FILTER ${cursorFilter} && ${userFilter}`,
-        `SORT ${cursorExpression}`,
+        `SORT ${cursorExpression} ${sortOrder}`,
         `LIMIT $args.first + 1`,
         `RETURN { cursor: ${cursorExpression}, node: $field_node }`,
       ]),
@@ -84,7 +85,7 @@ const createListPlusOneSubquery = (directiveArgs: any) => {
       indent(`OPTIONS {bfs: true}`),
       // filter out 'detached' edges which don't point to a node anymore
       `FILTER $field_node && ${cursorFilter} && ${userFilter}`,
-      `SORT ${cursorExpression}`,
+      `SORT ${cursorExpression} ${sortOrder}`,
       `LIMIT $args.first + 1`,
       `RETURN MERGE($field_edge, { cursor: ${cursorExpression}, node: $field_node })`,
     ]),

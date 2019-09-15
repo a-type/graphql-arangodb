@@ -1,5 +1,6 @@
 import { Database } from 'arangojs';
 import { GraphQLResolveInfo } from 'graphql';
+import { AqlQuery } from 'arangojs/lib/cjs/aql-query';
 export type DBQuery = {
   returnsList: boolean;
 
@@ -52,10 +53,11 @@ export type AqlResolver = {
     any
   >;
   runCustomQuery: (args: {
-    queryString: string;
-    bindVars?: { [name: string]: any };
+    query?: AqlQuery;
+    queryBuilder?: BuilderInstance;
     info: GraphQLResolveInfo;
     parent: any;
+    args: any;
     context: any;
   }) => Promise<any>;
 };

@@ -505,19 +505,18 @@ Instead, you can write your own resolver like so:
 
 ```ts
 import aqlResolver from 'graphql-arangodb';
+import aql from 'arangojs';
 
 const searchResolver = async (parent, args, context, info) => {
   const fullTextSearchString = processSearchString(args.searchString);
 
   return aqlResolver.runCustomQuery({
-    queryString: `
-    FOR matchedPost IN FULLTEXT(posts, "title", @searchString)
+    query: aql`
+    FOR matchedPost IN FULLTEXT(posts, "title", ${fullTextSearchString})
       RETURN matchedPost
     `,
-    bindVars: {
-      searchString: fullTextSearchString,
-    },
     parent,
+    args,
     context,
     info,
   });
@@ -551,6 +550,46 @@ query Search($searchString: "good") {
 ... they would still get `tags` and `author` resolved by your existing `@aql` directives on your schema, at no cost to you.
 
 `runCustomQuery` is a tool to give you as much power as possible to craft root queries and mutations, while still getting the benefits of your declarative directives to resolve deeply nested data in a single database round-trip.
+
+#### Using the built-in query builders
+
+In addition to crafting your own queries with a literal string, you can still use this library's built-in 'query builders' which power the directives to create your custom query. This enables you to either opt out of using directives entirely (if you prefer not to clutter your schema document) or conditionally trigger different built-in behaviors.
+
+```ts
+import aqlResolver, { builders } from 'graphql-arangodb';
+
+const conditionalResolver = async (parent, args, context, info) => {
+  if (args.searchTerm) {
+    return aqlResolver.runCustomQuery({
+      queryBuilder: builders.aqlRelayConnection({
+        // this sets up the relay connection to draw from a search view using the requested search term
+        source: `FOR $node IN PostSearchView SEARCH PHRASE($node.name, $args.searchTerm, 'text_en')`,
+        // our 'cursor' will actually be the weight value of the result, allowing proper sorting of results by weight.
+        cursorExpression: `BM25($node)`,
+        // because we order by weight, we actually want to start at higher values and go down
+        sortOrder: 'DESC',
+      }),
+      parent,
+      args,
+      context,
+      info,
+    });
+  } else {
+    return aqlResolver.runCustomQuery({
+      queryBuilder: builders.aqlRelayConnection({
+        source: `FOR $node IN posts`,
+        cursorExpression: '$node.createdAt',
+      }),
+      parent,
+      args,
+      context,
+      info,
+    });
+  }
+};
+```
+
+With the custom resolver above, for example, we construct our Relay-style connection based on a search view if the user has supplied a search term argument, or else we simply list all documents in the collection.
 
 ### Mutations (Experimental)
 

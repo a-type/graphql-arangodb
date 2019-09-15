@@ -19,7 +19,7 @@ exports[`query translation integration tests does a Relay-style connection 1`] =
             @field_user_postsConnection.args['filter'].titleLike == null || LIKE(user_postsConnection_node.title, CONCAT(\\"%\\", @field_user_postsConnection.args['filter'].titleLike, \\"%\\"))
           )
         )
-        SORT user_postsConnection_node.title
+        SORT user_postsConnection_node.title ASC
         LIMIT @field_user_postsConnection.args.first + 1
         RETURN MERGE(user_postsConnection_edge, { cursor: user_postsConnection_node.title, node: user_postsConnection_node })
       )
@@ -206,11 +206,122 @@ Object {
 }
 `;
 
+exports[`query translation integration tests resolves a custom builder-based query with conditional behavior 1`] = `
+"LET query = FIRST(
+  LET posts_listPlusOne = (
+    FOR posts_node IN SearchView SEARCH PHRASE(posts_node.name, @field_posts.args.searchTerm, 'text_en')
+    FILTER (!@field_posts.args.after || BM25(posts_node) > @field_posts.args.after) && true
+    SORT BM25(posts_node) DESC
+    LIMIT @field_posts.args.first + 1
+    RETURN { cursor: BM25(posts_node), node: posts_node }
+  )
+  LET posts_pruned_edges = SLICE(posts_listPlusOne, 0, @field_posts.args.first)
+  LET posts = {
+    edges: posts_pruned_edges,
+    pageInfo: { 
+      hasNextPage: LENGTH(posts_listPlusOne) == @field_posts.args.first + 1,
+      startCursor: LENGTH(posts_pruned_edges) > 0 ? FIRST(posts_pruned_edges).cursor : null,
+      endCursor: LENGTH(posts_pruned_edges) > 0 ? LAST(posts_pruned_edges).cursor : null
+    }
+  }
+  RETURN {
+    _id: posts._id,
+    _key: posts._key,
+    _rev: posts._rev,
+    edges: (
+      FOR posts_edges IN posts.edges
+      RETURN {
+        _id: posts_edges._id,
+        _key: posts_edges._key,
+        _rev: posts_edges._rev,
+        node: FIRST(
+          LET posts_edges_node = posts_edges.node
+          RETURN {
+            _id: posts_edges_node._id,
+            _key: posts_edges_node._key,
+            _rev: posts_edges_node._rev,
+            title: posts_edges_node.title,
+            id: posts_edges_node._key
+          }
+        )
+      }
+    )
+  }
+)
+RETURN query"
+`;
+
+exports[`query translation integration tests resolves a custom builder-based query with conditional behavior 2`] = `
+Object {
+  "field_posts": Object {
+    "args": Object {
+      "first": 10,
+      "searchTerm": "foo",
+    },
+  },
+}
+`;
+
+exports[`query translation integration tests resolves a custom builder-based query with conditional behavior 3`] = `
+"LET query = FIRST(
+  LET posts_listPlusOne = (
+    FOR posts_node IN posts
+    FILTER (!@field_posts.args.after || posts_node.createdAt > @field_posts.args.after) && true
+    SORT posts_node.createdAt ASC
+    LIMIT @field_posts.args.first + 1
+    RETURN { cursor: posts_node.createdAt, node: posts_node }
+  )
+  LET posts_pruned_edges = SLICE(posts_listPlusOne, 0, @field_posts.args.first)
+  LET posts = {
+    edges: posts_pruned_edges,
+    pageInfo: { 
+      hasNextPage: LENGTH(posts_listPlusOne) == @field_posts.args.first + 1,
+      startCursor: LENGTH(posts_pruned_edges) > 0 ? FIRST(posts_pruned_edges).cursor : null,
+      endCursor: LENGTH(posts_pruned_edges) > 0 ? LAST(posts_pruned_edges).cursor : null
+    }
+  }
+  RETURN {
+    _id: posts._id,
+    _key: posts._key,
+    _rev: posts._rev,
+    edges: (
+      FOR posts_edges IN posts.edges
+      RETURN {
+        _id: posts_edges._id,
+        _key: posts_edges._key,
+        _rev: posts_edges._rev,
+        node: FIRST(
+          LET posts_edges_node = posts_edges.node
+          RETURN {
+            _id: posts_edges_node._id,
+            _key: posts_edges_node._key,
+            _rev: posts_edges_node._rev,
+            title: posts_edges_node.title,
+            id: posts_edges_node._key
+          }
+        )
+      }
+    )
+  }
+)
+RETURN query"
+`;
+
+exports[`query translation integration tests resolves a custom builder-based query with conditional behavior 4`] = `
+Object {
+  "field_posts": Object {
+    "args": Object {
+      "first": 10,
+    },
+  },
+}
+`;
+
 exports[`query translation integration tests resolves a custom query inside the resolver with selections 1`] = `
 "LET query = FIRST(
   LET createUser = FIRST(
     
-                  INSERT {_key: @userId, role: @role, name: @name} INTO users
+                  INSERT {_key: @value0, role: @value1, name: @value2} INTO users
                   RETURN NEW
                 
   )
@@ -237,9 +348,9 @@ RETURN query"
 
 exports[`query translation integration tests resolves a custom query inside the resolver with selections 2`] = `
 Object {
-  "name": "Bob",
-  "role": "captain",
-  "userId": "foobar",
+  "value0": "foobar",
+  "value1": "captain",
+  "value2": "Bob",
 }
 `;
 

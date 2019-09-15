@@ -118,6 +118,21 @@ export default `
     hasNextPage: Boolean
   }
 
+  type PostsConnection {
+    edges: [PostEdge!]! @aqlRelayEdges
+    pageInfo: PostsPageInfo! @aqlRelayPageInfo
+  }
+
+  type PostEdge {
+    cursor: String!
+    node: Post! @aqlRelayNode
+  }
+
+  type PostsPageInfo {
+    hasNextPage: Boolean!
+    endCursor: String
+  }
+
   type Query {
     user(id: ID!): User
       @aqlDocument(
@@ -129,6 +144,8 @@ export default `
       @aqlDocument(
         collection: "users"
       )
+
+    posts(first: Int = 10, after: String, searchTerm: String): PostsConnection!
 
     authorizedPosts: [Post!]!
       @aqlSubquery(

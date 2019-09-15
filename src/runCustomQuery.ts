@@ -1,5 +1,5 @@
 import { GraphQLResolveInfo } from 'graphql';
-import { LibraryOptions, Builder } from './types';
+import { LibraryOptions, Builder, BuilderInstance } from './types';
 import defaultBuilders from './builders';
 import {
   isListOrWrappedListType,
@@ -10,43 +10,55 @@ import { extractQueriesFromSelectionSet } from './extractQueries';
 import { runQuery } from './runQuery';
 import { lines } from './utils/strings';
 import { buildSubquery } from './utils/aql';
+import { AqlQuery } from 'arangojs/lib/cjs/aql-query';
 
 export const createCustomQueryRunner = (options: LibraryOptions) => async ({
-  queryString,
   info,
   context,
   parent,
-  bindVars,
+  query,
+  queryBuilder: providedBuilder,
+  args,
 }: {
-  queryString: string;
-  bindVars?: { [name: string]: any };
+  query?: AqlQuery;
+  queryBuilder?: BuilderInstance;
   info: GraphQLResolveInfo;
   context: any;
   parent: any;
+  args: { [name: string]: any };
 }) => {
   const { builders = defaultBuilders, argumentResolvers = {} } = options;
+
+  if (!providedBuilder && !query) {
+    throw new Error('At least one of queryBuilder or query must be provided');
+  }
 
   const customQueryBuilder: Builder = {
     name: 'customQuery',
     build: ({ children, returnsList }) =>
       buildSubquery(
         lines([
-          `LET $field = ${buildSubquery(queryString, returnsList)}`,
+          `LET $field = ${buildSubquery(
+            (query as AqlQuery).query,
+            returnsList
+          )}`,
           children(),
         ]),
         returnsList
       ),
   };
 
-  const query = {
+  const builderQuery = {
     returnsList: isListOrWrappedListType(info.returnType),
-    builder: {
+    builder: providedBuilder || {
       builder: customQueryBuilder,
       directiveArgs: {},
     },
 
-    paramNames: [],
-    params: {},
+    paramNames: ['args'],
+    params: {
+      args,
+    },
     fieldNames: [],
     fieldQueries: {},
   };
@@ -60,11 +72,11 @@ export const createCustomQueryRunner = (options: LibraryOptions) => async ({
     );
   }
 
-  query.fieldQueries = extractQueriesFromSelectionSet({
+  builderQuery.fieldQueries = extractQueriesFromSelectionSet({
     selectionSet,
     info,
     path: getFieldPath(info),
-    parentQuery: query,
+    parentQuery: builderQuery,
     parentType: returnTypeAsObjectType,
     builders,
     argumentResolvers,
@@ -73,10 +85,10 @@ export const createCustomQueryRunner = (options: LibraryOptions) => async ({
   return runQuery({
     options,
     context,
-    query,
+    query: builderQuery,
     info,
     parent,
-    additionalBindVars: bindVars,
+    additionalBindVars: query && query.bindVars,
   });
 };
 

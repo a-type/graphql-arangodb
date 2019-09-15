@@ -86,10 +86,10 @@ directive @aqlKey on FIELD_DEFINITION
 directive @aqlRelayConnection(
   edgeCollection: String
   edgeDirection: AqlEdgeDirection
-  documentCollection: String
   cursorExpression: String
   source: String
   filter: String
+  sortOrder: AqlSortOrder = ASC
 ) on FIELD_DEFINITION | OBJECT
 
 directive @aqlRelayEdges on FIELD_DEFINITION | OBJECT
