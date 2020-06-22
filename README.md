@@ -2,6 +2,40 @@
 
 An experimental library for 'translating' GraphQL operations into ArangoDB AQL queries which are designed to fetch all requested data in as few queries as possible. Flexibility is another objective; I want to empower the developer to define exactly how they want their GraphQL schema without being forced into a particular schema shape due to their database structure.
 
+## Example
+
+```graphql
+type Query {
+  user(id: ID!): User @aqlDocument(collection: "users", key: "$args.id")
+}
+
+type User {
+  friends: [FriendOfEdge!]!
+    @aqlEdge(
+      collection: "friendOf"
+      direction: ANY
+      sort: { property: "name", sortOn: "$field_node" }
+    )
+}
+
+type FriendOfEdge {
+  strength: Int
+  user: User! @aqlEdgeNode
+}
+
+type Mutation {
+  createPost(input: PostCreateInput!): Post!
+    @aqlSubquery(
+      query: """
+      INSERT { title: $args.input.title, body: $args.input.body } INTO posts
+      """
+      return: "NEW"
+    )
+}
+```
+
+## Table of Contents
+
 - [graphql-arangodb](#graphql-arangodb)
   - [Setup](#setup)
     - [Installing](#installing)

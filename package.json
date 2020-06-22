@@ -10,8 +10,7 @@
   "scripts": {
     "start": "tsdx watch",
     "build": "tsdx build",
-    "test": "jest --watch",
-    "test:integration": "jest -c=./jest.integration.config.js --forceExit --runInBand",
+    "test": "jest",
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
