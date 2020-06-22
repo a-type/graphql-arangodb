@@ -1,0 +1,14 @@
+type: graph
+action: create
+name: main_graph
+edgedefinitions:
+  - collection: posted
+    from:
+      - users
+    to:
+      - posts
+  - collection: friendOf
+    from:
+      - users
+    to:
+      - users

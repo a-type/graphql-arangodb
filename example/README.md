@@ -14,50 +14,46 @@ You also need a named graph with edge collections:
 - `posted` : from `users`, to `posts`.
 - `friendOf`: from `users`, to `users`.
 
-I like [migo](https://github.com/deusdat/arangomigo) as an ArangoDB migration tool. In Migo, the above might look like:
+I like [migo](https://github.com/deusdat/arangomigo) as an ArangoDB migration tool. There's migrations for Migo in the `./migrations` directory. You've got to provide the [config](https://github.com/deusdat/arangomigo#creating-the-configuration-file) for your local database server though.
 
-**0001_database.migration**
+## Playing with the example
 
-```yml
-type: database
-action: create
-name: exampleDb
-allowed:
-  - username: username
-  - password: password
+Here are some things to try:
+
+```graphql
+mutation {
+  createExampleUser {
+    user {
+      name
+    }
+  }
+}
 ```
 
-**0002_users.migration**
-
-```yml
-type: collection
-action: create
-name: users
+```graphql
+mutation {
+  createPost(title: "Hello world", body: "Hiiii") {
+    post {
+      id
+    }
+  }
+}
 ```
 
-**0003_posts.migration**
-
-```yml
-type: collection
-action: create
-name: posts
+```graphql
+query {
+  users {
+    id
+    name
+    posts {
+      id
+    }
+    drafts {
+      id
+      title
+    }
+  }
+}
 ```
 
-**0004_graph.migration**
-
-```yml
-type: graph
-action: create
-name: main_graph
-edgedefinitions:
-  - collection: posted
-    from:
-      - users
-    to:
-      - posts
-  - collection: friendOf
-    from:
-      - users
-    to:
-      - users
-```
+The new post will show up in drafts, since it doesn't have a publishedAt field.

@@ -1,0 +1,6 @@
+type: database
+action: create
+name: exampleDb
+allowed:
+  - username: username
+    password: password

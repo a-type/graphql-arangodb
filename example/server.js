@@ -1,7 +1,7 @@
 // NOTE - in your code, this would be importing from graphql-arangodb
-import { directiveTypeDefs, aqlResolver } from '../dist';
-import { GraphQLServer } from 'graphql-yoga';
-import { Database } from 'arangojs';
+const { directiveTypeDefs, resolver: aqlResolver } = require('../dist');
+const { GraphQLServer } = require('graphql-yoga');
+const { Database } = require('arangojs');
 
 const typeDefs = `
   ${directiveTypeDefs}
@@ -16,7 +16,7 @@ const typeDefs = `
         edgeCollection: "posted"
         direction: OUTBOUND
         # only show published posts for users
-        filter: "$node.publishedAt != null"
+        filter: "$field.publishedAt != null"
       )
 
     # authenticated users can see their own drafts. for this subquery
@@ -68,6 +68,9 @@ const typeDefs = `
 
     users: [User!]!
       @aqlDocument(collection: "users")
+
+    posts: [Post!]!
+      @aqlDocument(collection: "posts")
   }
 
   type CreatePostPayload {
@@ -75,7 +78,17 @@ const typeDefs = `
       @aqlNewQuery
       @aqlSubquery(
         query: """
-        LET $field = DOCUMENT(posts, $parent._key)
+        LET $field = DOCUMENT(posts, $parent.post._key)
+        """
+      )
+  }
+
+  type CreateUserPayload {
+    user: User!
+      @aqlNewQuery
+      @aqlSubquery(
+        query: """
+        LET $field = DOCUMENT(users, $parent.user._key)
         """
       )
   }
@@ -84,29 +97,48 @@ const typeDefs = `
     createPost(title: String!, body: String!): CreatePostPayload!
       @aqlSubquery(
         query: """
-        INSERT { title: $args.title, body: $args.body }
-        INTO posts
-        OPTIONS { waitForSync: true }
-        LET $field = {
-          post: NEW
-        }
+        LET user = DOCUMENT(users, $context.userId)
+        LET post = FIRST(
+          INSERT { title: $args.title, body: $args.body }
+          INTO posts
+          RETURN NEW
+        )
+        INSERT { _from: user._id, _to: post._id } INTO posted
         """
+        return: "{ post: post }"
+      )
+
+    createExampleUser: CreateUserPayload!
+      @aqlSubquery(
+        query: """
+        INSERT { name: "Example", _key: "exampleKey", bio: "I exist" }
+        INTO users
+        """
+        return: "{ user: NEW }"
       )
   }
 `;
 
+// IMPORTANT - add resolvers for every 'top-level' AQL operation.
+// That's basically anything under Query, Mutation, and anything marked
+// with @aqlNewQuery
 const resolvers = {
   Query: {
     user: aqlResolver,
     users: aqlResolver,
+    posts: aqlResolver,
   },
   Mutation: {
     createPost: aqlResolver,
+    createExampleUser: aqlResolver,
   },
   // important: because we split the query in this type,
   // a resolver is required
   CreatePostPayload: {
     post: aqlResolver,
+  },
+  CreateUserPayload: {
+    user: aqlResolver,
   },
 };
 
@@ -120,8 +152,11 @@ const context = {
   arangoDb,
   // in a real app, you'd define your context as a function which
   // might check cookies or a JWT to determine the identity of
-  // the requesting user.
-  userId: 'some fake authenticated user id',
+  // the requesting user. For this demo, we use the hardcoded
+  // key we specify in the createExampleUser operation above.
+  arangoContext: {
+    userId: 'exampleKey',
+  },
 };
 
 const server = new GraphQLServer({
