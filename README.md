@@ -2,6 +2,10 @@
 
 An experimental library for 'translating' GraphQL operations into ArangoDB AQL queries which are designed to fetch all requested data in as few queries as possible. Flexibility is another objective; I want to empower the developer to define exactly how they want their GraphQL schema without being forced into a particular schema shape due to their database structure.
 
+## Maintainers Welcome
+
+I've moved on from the side project which drove me to create this library and I don't actively use it anymore. If there's a feature or bugfix you need, I encourage you to open a PR. If you'd like to take this project in a new direction, you're welcome to fork it!
+
 ## Example
 
 ```graphql
@@ -39,6 +43,12 @@ type Mutation {
 For a simple and small example, see the [example directory](./example).
 
 For a larger scale app that uses this library, check out my now-defunct startup idea [Toast](https://github.com/a-type/toast/tree/master/services/toast-core). The toast-core microservice (linked) drove the entire development of this library and almost every feature is utilized in that codebase.
+
+## Known Limitations
+
+- This library is not designed to run on the Foxx framework. Because Foxx code runs with direct database memory access, the concern of batching up queries is probably not as important, and designing for Foxx posed too many complexities to getting the library working.
+- Experimental features, like Relay support, have known shortcomings. See the documentation for those sections.
+- Writing database queries inside a GraphQL schema can be error prone! That's just a fact of life for the way this library is implemented.
 
 ## Table of Contents
 
@@ -86,7 +96,7 @@ npm i --save graphql-arangodb
 You may also need to install peer dependencies if you don't have them:
 
 ```
-npm i --save graphql graphql-middleware arangojs
+npm i --save graphql arangojs
 ```
 
 ### Directive type definitions
