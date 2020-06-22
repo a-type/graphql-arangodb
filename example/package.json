@@ -1,0 +1,18 @@
+{
+  "name": "example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "arangojs": "^6.14.1",
+    "graphql": "^15.1.0",
+    "graphql-middleware": "^4.0.2",
+    "graphql-yoga": "^1.18.3"
+  }
+}

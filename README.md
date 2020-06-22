@@ -34,6 +34,12 @@ type Mutation {
 }
 ```
 
+## Code Examples
+
+For a simple and small example, see the [example directory](./example).
+
+For a larger scale app that uses this library, check out my now-defunct startup idea [Toast](https://github.com/a-type/toast/tree/master/services/toast-core). The toast-core microservice (linked) drove the entire development of this library and almost every feature is utilized in that codebase.
+
 ## Table of Contents
 
 - [graphql-arangodb](#graphql-arangodb)
