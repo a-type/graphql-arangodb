@@ -1,6 +1,6 @@
 {
   "name": "graphql-arangodb",
-  "version": "0.1.23",
+  "version": "0.1.24",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/graphql-arangodb.esm.js",
@@ -15,8 +15,8 @@
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
-    "arangojs": "^6.10.0",
-    "graphql": "^14.4.2"
+    "arangojs": "^6.14.0",
+    "graphql": "^14.7.0"
   },
   "husky": {
     "hooks": {
@@ -30,17 +30,19 @@
     "trailingComma": "es5"
   },
   "devDependencies": {
-    "@types/graphql": "^14.2.2",
+    "@types/graphql": "^14.5.0",
     "@types/jest": "^24.0.15",
     "@types/ramda": "^0.26.16",
-    "arangojs": "^6.10.0",
-    "graphql": "^14.4.2",
+    "arangojs": "^6.14.1",
+    "graphql": "^14.7.0",
     "husky": "^3.0.0",
-    "prettier": "^1.18.2",
+    "jest": "^26.4.2",
+    "prettier": "^1.19.1",
     "pretty-quick": "^1.11.1",
-    "tsdx": "^0.7.2",
-    "tslib": "^1.10.0",
-    "typescript": "^3.5.3"
+    "testcontainers": "^3.4.0",
+    "tsdx": "^0.13.3",
+    "tslib": "^1.13.0",
+    "typescript": "^3.9.7"
   },
   "dependencies": {
     "graphql-middleware": "^3.0.2",
