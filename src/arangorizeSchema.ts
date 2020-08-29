@@ -44,7 +44,7 @@ export const arangorizeSchema = async (
     if (!(await arangoDB.exists())) {
       try {
         arangoDB = await arangoDB.createDatabase(ensureDB);
-      } catch (err) {
+      } catch {
         // hack create Database throws always error
       }
     }

@@ -5,6 +5,6 @@ export { createResolver } from './resolver';
 export * from './typeDefs';
 export { resolver };
 export { builderCreators as builders } from './builderInstanceCreators';
-export * from './arongrizeSchema';
+export * from './arangorizeSchema';
 
 export default resolver;

@@ -1,7 +1,7 @@
 import { Database } from 'arangojs';
 import { ArangoDBContainer, StartedArangoContainer } from 'testcontainers';
 import { Config } from 'arangojs/lib/cjs/connection';
-import { arangorizeSchema } from '../arongrizeSchema';
+import { arangorizeSchema } from '../arangorizeSchema';
 
 describe('arangorize', () => {
   jest.setTimeout(60000);
