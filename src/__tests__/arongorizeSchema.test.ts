@@ -47,13 +47,6 @@ describe('arangorize', () => {
   });
 
   test('Create edge collection', async () => {
-    const db = new Database({
-      url: container.getHttpUrl(),
-    } as Config);
-
-    db.useDatabase('_system');
-    db.useBasicAuth(container.getUsername(), container.getPassword());
-
     const typeDefs = `
     type FriendsEdge @aqlCollection(name: "friends" type: EDGE) {
       id: String!
