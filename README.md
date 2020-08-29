@@ -99,18 +99,6 @@ You may also need to install peer dependencies if you don't have them:
 npm i --save graphql arangojs
 ```
 
-### Directive type definitions
-
-To use the directives in this library, you need to add type definitions for them. The library exports pre-built type definitions for all directives, you just need to include them in your type definitions.
-
-```ts
-import { directiveTypeDefs } from 'graphql-arangodb';
-
-const typeDefs = [directiveTypeDefs, ...allYourAppsOtherTypeDefs];
-
-makeExecutableSchema({ typeDefs });
-```
-
 ### Adding a Database instance
 
 The easiest way to connect `graphql-arangodb` to your ArangoDB database is to instantiate a `Database` class from `arangojs` and assign it to the `arangoDb` field of your GraphQL `context`:
@@ -127,6 +115,61 @@ const context = {
 };
 
 // pass the context into your GraphQL server according to documentation of the server
+```
+
+### Directive type definitions
+
+To use the directives in this library, you need to add type definitions for them. The library exports pre-built type definitions for all directives, you can either include them manually,
+
+```ts
+import { directiveTypeDefs } from 'graphql-arangodb';
+
+const typeDefs = [directiveTypeDefs, ...allYourAppsOtherTypeDefs];
+
+makeExecutableSchema({ typeDefs });
+```
+
+or you can use the arangorizeSchema generator. arangorizeSchema can additionaly automatically create document and edge collections and indexes:
+
+Schema example:
+
+```graphql
+type User @aqlCollection(name: "users" ) {
+  id: String! @aqlIndex(type: UNIQUE)
+  name: String!
+  friends: [FriendOfEdge!]!
+    @aqlEdge(
+      collection: "friendOf"
+      direction: ANY
+      sort: { property: "name", sortOn: "$field_node" }
+    )
+}
+
+@aqlCollection(name: "friendOf", type: EDGE )
+type FriendOfEdge {
+  strength: Int
+  user: User! @aqlEdgeNode
+}
+```
+
+```TS
+import { arangorizeSchema } from 'graphql-arangodb';
+
+const typeDefs = [...allYourAppsOtherTypeDefs];
+const resolvers = { ...allYourResolvers}
+
+await arangorizeSchema({ typeDefs, resolvers }, db );
+```
+
+As an optional, last parameter you can add a database name when you want to ensure a database exisits. If the database does not exists it will be created.
+
+```TS
+import { arangorizeSchema } from 'graphql-arangodb';
+
+const typeDefs = [...allYourAppsOtherTypeDefs];
+const resolvers = { ...allYourResolvers}
+
+await arangorizeSchema({ typeDefs, resolvers }, db, 'myAwesomeDB');
 ```
 
 ### Resolvers
