@@ -16,7 +16,7 @@
   },
   "peerDependencies": {
     "arangojs": "^6.14.0",
-    "graphql": "^14.4.2"
+    "graphql": "^14.7.0"
   },
   "husky": {
     "hooks": {
@@ -30,13 +30,13 @@
     "trailingComma": "es5"
   },
   "devDependencies": {
-    "@types/graphql": "^14.2.2",
+    "@types/graphql": "^14.5.0",
     "@types/jest": "^24.0.15",
     "@types/ramda": "^0.26.16",
     "arangojs": "^6.14.1",
-    "graphql": "^14.4.2",
+    "graphql": "^14.7.0",
     "husky": "^3.0.0",
-    "prettier": "^1.18.2",
+    "prettier": "^1.19.1",
     "pretty-quick": "^1.11.1",
     "testcontainers": "^3.4.0",
     "tsdx": "^0.7.2",
