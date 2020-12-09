@@ -1,6 +1,6 @@
 {
   "name": "graphql-arangodb",
-  "version": "0.1.23",
+  "version": "0.1.24",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/graphql-arangodb.esm.js",
